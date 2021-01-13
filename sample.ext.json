@@ -1,0 +1,13 @@
+{
+  "identifier": "org.standardnotes.editor-template-cra-typescript",
+  "name": "Code Pro",
+  "content_type": "SN|Component",
+  "area": "editor-editor",
+  "version": "0.1.0",
+  "description": "Code Pro is a code editor for Standard Notes powered by the Monaco Editor",
+  "url": "http://localhost:3000/index.html",
+  "download_url": "",
+  "latest_url": "",
+  "marketing_url": "https://github.com/standardnotes/code-pro",
+  "thumbnail_url": ""
+}
