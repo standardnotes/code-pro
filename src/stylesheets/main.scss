@@ -1,0 +1,165 @@
+@import '~sn-stylekit/dist/stylekit.css';
+
+:root {
+  --sn-stylekit-font-size-editor: 16px;
+  --sn-stylekit-monospace-font: SFMono-Regular, Consolas, Liberation Mono, Menlo,
+    'Ubuntu Mono', courier, monospace;
+}
+
+body,
+html {
+  background-color: transparent;
+  background-color: var(--sn-stylekit-background-color);
+  font-family: var(--sn-stylekit-sans-serif-font);
+  font-size: var(--sn-stylekit-base-font-size);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+* {
+  // To prevent gray flash when focusing input on mobile Safari
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.sn-component {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--sn-stylekit-font-size-editor);
+  min-height: 100vh;
+  @media screen and (max-width: 420px) {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/** Monaco */
+.MonacoEditorContainerParentDiv {
+  overflow-x: hidden !important;
+  overflow-y: hidden;
+  // Hides the horizontal scroll bar when using the Monaco Editor
+  // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
+  --heightVar: calc(100vh - 3em);
+  height: var(--heightVar);
+  max-height: var(--heightVar);
+  min-height: var(--heightVar);
+  padding: 1em;
+  padding-bottom: 0px;
+}
+
+.MonacoEditorContainer,
+.MonacoDiffEditorContainer {
+  height: 100%;
+  //margin-bottom: 1.5em;
+  width: 100%;
+}
+
+/** Settings */
+
+#settings {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: auto;
+  margin-top: auto;
+  opacity: 0.2;
+  padding-left: 1em;
+  transition: opacity 400ms ease-out;
+  @media screen and (max-width: 500px) {
+    opacity: 0.5;
+  }
+  @media screen and (min-width: 801px) {
+    &.hide {
+      opacity: 0;
+    }
+  }
+  &:focus,
+  &:hover,
+  &.focused {
+    opacity: 1;
+    transition: opacity 250ms ease-in;
+  }
+}
+
+.settings {
+  color: var(--sn-stylekit-foreground-color);
+  display: flex;
+  padding-right: 0.5em;
+  &.buttons .button {
+    margin-right: 0.5em;
+  }
+  .button {
+    border: 1px solid var(--sn-component-inner-border-color);
+    border-radius: 0;
+    max-height: 22.6px;
+    padding: 0px 0.5em;
+  }
+  .label {
+    display: block;
+    font-size: 14px;
+    text-align: center;
+  }
+  label {
+    min-height: 22.6px;
+  }
+  select {
+    background-color: var(--sn-stylekit-background-color);
+    color: var(--sn-stylekit-foreground-color);
+    //font-size: var(--sn-stylekit-font-size-editor);
+    font-size: 14px;
+  }
+  // Specific items
+  &.language {
+    @media screen and (max-width: 900px) {
+      flex-direction: column;
+    }
+  }
+  @media screen and (max-width: 860px) {
+    flex-direction: column;
+    &.buttons {
+      flex-direction: row;
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  #settings.show {
+    flex-direction: column;
+  }
+  .settings,
+  .settings.language {
+    padding-bottom: 5px;
+    flex-direction: row;
+    .label,
+    select {
+      font-size: 16px;
+    }
+  }
+}
+
+.sn-theme {
+  /** This is the editing / input container */
+  .monaco-editor,
+  .monaco-editor-background,
+  .monaco-editor .inputarea.ime-input {
+    background-color: var(--sn-stylekit-background-color);
+  }
+
+  /* This is the line numbers and preview on the right */
+  .monaco-editor .margin {
+    background-color: var(--sn-stylekit-background-color);
+  }
+
+  .mtk1 {
+    color: var(--sn-stylekit-foreground-color);
+  }
+
+  .monaco-editor .detected-link,
+  .monaco-editor .detected-link-active,
+  .monaco-hover .hover-contents a.code-link > span,
+  .mtk5,
+  .mtk20 {
+    color: var(--sn-stylekit-info-color);
+  }
+}
+@import './print.scss';
+@import './dark.scss';

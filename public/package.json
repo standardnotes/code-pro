@@ -1,0 +1,22 @@
+{
+  "name": "code-pro",
+  "version": "0.1.0-beta.1",
+  "description": "Code Pro is a code editor for Standard Notes powered by the Monaco Editor",
+  "keywords": [
+    "Standard Notes",
+    "Standard Notes Extensions",
+    "Monaco Editor"
+  ],
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/standardnotes/code-pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/standardnotes/code-pro/issues"
+  },
+  "sn": {
+    "main": "index.html"
+  }
+}
