@@ -57,7 +57,12 @@ export default class Settings extends React.Component<
   };
 
   loadDefaultSettings = () => {
-    this.props.loadDefaultSettings(this.props.saveSettings);
+    const callback = () => {
+      /** Refresh the editor and save settings after loading default */
+      this.props.refreshEditor();
+      this.props.saveSettings();
+    };
+    this.props.loadDefaultSettings(callback);
   };
 
   render() {
