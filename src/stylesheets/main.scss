@@ -61,6 +61,23 @@ html {
   // Hides the horizontal scroll bar when using the Monaco Editor
   // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
   --heightVar: calc(100vh - 3em);
+  @media screen and (max-width: 1068px) {
+    --heightVar: calc(100vh - 4.25em);
+  }
+  @media screen and (max-width: 960px) {
+    --heightVar: calc(100vh - 5em);
+  }
+  /* For three lines of settings */
+  @media screen and (max-width: 739px) {
+    --heightVar: calc(100vh - 5.5em);
+  }
+  @media screen and (max-width: 655px) {
+    --heightVar: calc(100vh - 6.5em);
+  }
+  /* Make settings small when hidden */
+  &.hideSettings {
+    --heightVar: calc(100vh - 3em);
+  }
   height: var(--heightVar);
   max-height: var(--heightVar);
   min-height: var(--heightVar);
@@ -82,8 +99,12 @@ html {
   margin-bottom: auto;
   margin-top: auto;
   opacity: 0.2;
+  overflow-x: auto;
   padding-left: 1em;
   transition: opacity 400ms ease-out;
+  @media screen and (max-width: 720px) {
+    padding-left: 0.5em;
+  }
   @media screen and (max-width: 500px) {
     opacity: 0.5;
   }
@@ -104,6 +125,12 @@ html {
   color: var(--sn-stylekit-foreground-color);
   display: flex;
   padding-right: 0.5em;
+  @media screen and (max-width: 695px) {
+    padding-right: 0.2em;
+  }
+  .buttons {
+    padding-right: 0px;
+  }
   &.buttons .button {
     margin-right: 0.5em;
   }
@@ -115,7 +142,7 @@ html {
   }
   .label {
     display: block;
-    font-size: 14px;
+    font-size: 16px;
     text-align: center;
   }
   label {
@@ -125,33 +152,12 @@ html {
     background-color: var(--sn-stylekit-background-color);
     color: var(--sn-stylekit-foreground-color);
     //font-size: var(--sn-stylekit-font-size-editor);
-    font-size: 14px;
+    font-size: 16px;
   }
-  // Specific items
-  &.language {
-    @media screen and (max-width: 900px) {
-      flex-direction: column;
-    }
-  }
-  @media screen and (max-width: 860px) {
+  @media screen and (max-width: 960px) {
     flex-direction: column;
     &.buttons {
       flex-direction: row;
-    }
-  }
-}
-
-@media screen and (max-width: 600px) {
-  #settings.show {
-    flex-direction: column;
-  }
-  .settings,
-  .settings.language {
-    padding-bottom: 5px;
-    flex-direction: row;
-    .label,
-    select {
-      font-size: 16px;
     }
   }
 }

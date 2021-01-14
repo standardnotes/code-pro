@@ -27,6 +27,7 @@ export enum HtmlClassName {
 export enum HtmlElementId {
   fontSize = 'fontSize',
   language = 'language',
+  minimap = 'minimap',
   tabSize = 'tabSize',
   theme = 'theme',
   wordWrap = 'wordWrap',
@@ -42,6 +43,7 @@ export enum HtmlElementId {
 export interface SettingsInterface {
   fontSize: string;
   language: string;
+  minimap: boolean;
   tabSize: number;
   theme: string;
   wordWrap: string;
@@ -59,6 +61,7 @@ export interface EditorInterface extends SettingsInterface {
 const initialState = {
   fontSize: '16px',
   language: 'markdown',
+  minimap: true,
   showSettings: true,
   tabSize: 2,
   text: '',
@@ -124,6 +127,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       settings = {
         fontSize: this.state.fontSize,
         language: this.state.language,
+        minimap: this.state.minimap,
         tabSize: this.state.tabSize,
         theme: this.state.theme,
         wordWrap: this.state.wordWrap,
@@ -150,6 +154,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
           {
             fontSize: loadedSettings.fontSize,
             language: loadedSettings.language,
+            minimap: loadedSettings.minimap,
             tabSize: loadedSettings.tabSize,
             theme: loadedSettings.theme,
             wordWrap: loadedSettings.wordWrap,
@@ -185,6 +190,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
     defaultSettings = {
       fontSize: this.state.fontSize,
       language: this.state.language,
+      minimap: this.state.minimap,
       tabSize: this.state.tabSize,
       theme: this.state.theme,
       wordWrap: this.state.wordWrap,
@@ -206,6 +212,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
           {
             fontSize: defaultSettings.fontSize,
             language: defaultSettings.language,
+            minimap: defaultSettings.minimap,
             tabSize: defaultSettings.tabSize,
             theme: defaultSettings.theme,
             wordWrap: defaultSettings.wordWrap,
@@ -233,10 +240,21 @@ export default class Editor extends React.Component<{}, EditorInterface> {
     }
   };
 
-  handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
-    const value = target.value;
-    this.saveText(value);
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = target.name;
+    this.setState(
+      {
+        [name]: value,
+      },
+      () => {
+        if (name === 'minimap') {
+          this.saveSettings();
+          this.refreshEditor();
+        }
+      }
+    );
   };
 
   handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -302,6 +320,10 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         showSettings: !this.state.showSettings,
       },
       () => {
+        /** Refresh the editor to increase its height */
+        if (!this.state.showSettings) {
+          this.refreshEditor();
+        }
         const toggleSettingsButton = document.getElementById(
           HtmlElementId.settingsToggleButton
         );
@@ -361,12 +383,15 @@ export default class Editor extends React.Component<{}, EditorInterface> {
             className={
               HtmlClassName.MonacoEditorContainerParentDiv +
               ' ' +
-              this.state.theme
+              this.state.theme +
+              ' ' +
+              (this.state.showSettings ? 'showSettings' : 'hideSettings')
             }
           >
             <MonacoEditor
               fontSize={this.state.fontSize}
               language={this.state.language}
+              minimap={this.state.minimap}
               onKeyDown={this.onKeyDown}
               saveText={this.saveText}
               tabSize={this.state.tabSize}
@@ -379,8 +404,10 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         <Settings
           debugMode={debugMode}
           fontSize={this.state.fontSize}
+          handleInputChange={this.handleInputChange}
           handleSelectChange={this.handleSelectChange}
           language={this.state.language}
+          minimap={this.state.minimap}
           loadDefaultSettings={this.loadDefaultSettings}
           refreshEditor={this.refreshEditor}
           saveSettings={this.saveSettings}
@@ -434,6 +461,7 @@ interface MonacoEditorTypes {
   fontSize: string;
   id?: string;
   language: string;
+  minimap: boolean;
   onKeyDown: Function;
   onKeyUp?: Function;
   saveText: Function;
@@ -447,6 +475,7 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   fontSize = '16px',
   id = HtmlClassName.MonacoEditorContainer,
   language = 'javascript',
+  minimap = true,
   onKeyDown,
   saveText,
   tabSize = 2,
@@ -458,130 +487,131 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   let editor: monaco.editor.IStandaloneCodeEditor;
   useEffect(() => {
     if (divEl.current) {
-      const colorRegExp = /^#?([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?$/;
-      const whiteSpaceRegExp = /\s+/g;
+      if (theme === 'sn-theme') {
+        const colorRegExp = /^#?([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?$/;
+        const whiteSpaceRegExp = /\s+/g;
 
-      let backgroundColor: string;
-      let tempBackgroundColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-background-color')
-        .replace(whiteSpaceRegExp, '');
+        let backgroundColor: string;
+        let tempBackgroundColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-background-color')
+          .replace(whiteSpaceRegExp, '');
 
-      if (!tempBackgroundColor.match(colorRegExp)) {
-        console.error('Error parsing background color', tempBackgroundColor);
-        backgroundColor = '#ffffff';
-      } else {
-        backgroundColor = tempBackgroundColor;
-      }
+        if (!tempBackgroundColor.match(colorRegExp)) {
+          console.error('Error parsing background color', tempBackgroundColor);
+          backgroundColor = '#ffffff';
+        } else {
+          backgroundColor = tempBackgroundColor;
+        }
 
-      let borderColor: string;
-      let tempBorderColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-border-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempBorderColor.match(colorRegExp)) {
-        console.error('Error parsing border color', tempBorderColor);
-        borderColor = '#e3e3e3';
-      } else {
-        borderColor = tempBorderColor;
-      }
+        let borderColor: string;
+        let tempBorderColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-border-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempBorderColor.match(colorRegExp)) {
+          console.error('Error parsing border color', tempBorderColor);
+          borderColor = '#e3e3e3';
+        } else {
+          borderColor = tempBorderColor;
+        }
 
-      let contrastBackgroundColor: string;
-      let tempContrastBackgroundColor = getComputedStyle(
-        document.documentElement
-      )
-        .getPropertyValue('--sn-stylekit-contrast-background-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempContrastBackgroundColor.match(colorRegExp)) {
-        console.error(
-          'Error parsing contrast background color',
-          tempContrastBackgroundColor
-        );
-        contrastBackgroundColor = '#F6F6F6';
-      } else {
-        contrastBackgroundColor = tempContrastBackgroundColor;
-      }
+        let contrastBackgroundColor: string;
+        let tempContrastBackgroundColor = getComputedStyle(
+          document.documentElement
+        )
+          .getPropertyValue('--sn-stylekit-contrast-background-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempContrastBackgroundColor.match(colorRegExp)) {
+          console.error(
+            'Error parsing contrast background color',
+            tempContrastBackgroundColor
+          );
+          contrastBackgroundColor = '#F6F6F6';
+        } else {
+          contrastBackgroundColor = tempContrastBackgroundColor;
+        }
 
-      let dangerColor: string;
-      let tempDangerColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-danger-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempDangerColor.match(colorRegExp)) {
-        console.error('Error parsing danger color', tempDangerColor);
-        dangerColor = '#F80324'; // Red
-      } else {
-        dangerColor = tempDangerColor;
-      }
+        let dangerColor: string;
+        let tempDangerColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-danger-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempDangerColor.match(colorRegExp)) {
+          console.error('Error parsing danger color', tempDangerColor);
+          dangerColor = '#F80324'; // Red
+        } else {
+          dangerColor = tempDangerColor;
+        }
 
-      let foregroundColor: string;
-      let fadedForegroundColor: string;
-      let fadedTwiceForegroundColor: string;
-      let tempForegroundColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-foreground-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempForegroundColor.match(colorRegExp)) {
-        console.error('Error parsing foreground color', tempForegroundColor);
-        foregroundColor = '#000000';
-        fadedForegroundColor = '#00000099'; /** 60 */
-        fadedTwiceForegroundColor = '#0000001A'; /** 10 */
-      } else {
-        foregroundColor = tempForegroundColor;
-        if (!foregroundColor.concat('99').match(colorRegExp)) {
+        let foregroundColor: string;
+        let fadedForegroundColor: string;
+        let fadedTwiceForegroundColor: string;
+        let tempForegroundColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-foreground-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempForegroundColor.match(colorRegExp)) {
+          console.error('Error parsing foreground color', tempForegroundColor);
+          foregroundColor = '#000000';
           fadedForegroundColor = '#00000099'; /** 60 */
           fadedTwiceForegroundColor = '#0000001A'; /** 10 */
         } else {
-          fadedForegroundColor = tempForegroundColor.concat('99'); /** 60% */
-          fadedTwiceForegroundColor = tempForegroundColor.concat(
-            '1A'
-          ); /** 10% */
+          foregroundColor = tempForegroundColor;
+          if (!foregroundColor.concat('99').match(colorRegExp)) {
+            fadedForegroundColor = '#00000099'; /** 60 */
+            fadedTwiceForegroundColor = '#0000001A'; /** 10 */
+          } else {
+            fadedForegroundColor = tempForegroundColor.concat('99'); /** 60% */
+            fadedTwiceForegroundColor = tempForegroundColor.concat(
+              '1A'
+            ); /** 10% */
+          }
         }
-      }
 
-      let infoColor: string;
-      let fadedInfoColor: string;
-      let fadedTwiceInfoColor: string;
-      let tempInfoColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-info-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempInfoColor.match(colorRegExp)) {
-        console.error('Error parsing info color', tempInfoColor);
-        infoColor = '#086dd6';
-        fadedInfoColor = '#086dd666'; /** 40% */
-        fadedTwiceInfoColor = '#086dd633'; /** 20% */
-      } else {
-        infoColor = tempInfoColor;
-        /** You only need to test for one */
-        if (!tempInfoColor.concat('66').match(colorRegExp)) {
-          fadedInfoColor = '#086dd666';
-          fadedTwiceInfoColor = '#086dd633';
+        let infoColor: string;
+        let fadedInfoColor: string;
+        let fadedTwiceInfoColor: string;
+        let tempInfoColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-info-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempInfoColor.match(colorRegExp)) {
+          console.error('Error parsing info color', tempInfoColor);
+          infoColor = '#086dd6';
+          fadedInfoColor = '#086dd666'; /** 40% */
+          fadedTwiceInfoColor = '#086dd633'; /** 20% */
         } else {
-          fadedInfoColor = tempInfoColor.concat('66'); // This is 40% opacity
-          fadedTwiceInfoColor = tempInfoColor.concat('33'); // This is 20% opacity
+          infoColor = tempInfoColor;
+          /** You only need to test for one */
+          if (!tempInfoColor.concat('66').match(colorRegExp)) {
+            fadedInfoColor = '#086dd666';
+            fadedTwiceInfoColor = '#086dd633';
+          } else {
+            fadedInfoColor = tempInfoColor.concat('66'); // This is 40% opacity
+            fadedTwiceInfoColor = tempInfoColor.concat('33'); // This is 20% opacity
+          }
         }
-      }
 
-      let shadowColor: string;
-      let tempShadowColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-shadow-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempShadowColor.match(colorRegExp)) {
-        console.error('Error parsing shadow color', tempShadowColor);
-        shadowColor = '#C8C8C8'; // Gray shadow
-      } else {
-        shadowColor = tempShadowColor;
-      }
+        let shadowColor: string;
+        let tempShadowColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-shadow-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempShadowColor.match(colorRegExp)) {
+          console.error('Error parsing shadow color', tempShadowColor);
+          shadowColor = '#C8C8C8'; // Gray shadow
+        } else {
+          shadowColor = tempShadowColor;
+        }
 
-      let warningColor: string;
-      let tempWarningColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--sn-stylekit-warning-color')
-        .replace(whiteSpaceRegExp, '');
-      if (!tempWarningColor.match(colorRegExp)) {
-        console.error('Error parsing warning color', tempWarningColor);
-        warningColor = '#f6a200'; // Orange
-      } else {
-        warningColor = tempWarningColor;
-      }
+        let warningColor: string;
+        let tempWarningColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--sn-stylekit-warning-color')
+          .replace(whiteSpaceRegExp, '');
+        if (!tempWarningColor.match(colorRegExp)) {
+          console.error('Error parsing warning color', tempWarningColor);
+          warningColor = '#f6a200'; // Orange
+        } else {
+          warningColor = tempWarningColor;
+        }
 
-      let darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (theme === 'sn-theme') {
+        let darkMode = window.matchMedia('(prefers-color-scheme: dark)')
+          .matches;
         monaco.editor.defineTheme('sn-theme', {
           /** If sn-theme, then if not dark mode, use vs. Otherwise, use vs-dark (default) */
           base: !darkMode ? 'vs' : 'vs-dark',
@@ -653,6 +683,9 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
         //fontFamily: 'var(--sn-stylekit-monospace-font)',
         fontSize: parseInt(fontSize.replace('px', '')),
         language: language,
+        minimap: {
+          enabled: minimap,
+        },
         tabSize: tabSize,
         theme: theme,
         //@ts-ignore

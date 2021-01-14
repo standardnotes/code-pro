@@ -11,6 +11,7 @@ import { HtmlElementId, SettingsInterface } from './Editor';
 
 interface SettingsProps extends SettingsInterface {
   debugMode: boolean;
+  handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   loadDefaultSettings: (callback: () => void) => void;
   refreshEditor: () => void;
@@ -32,15 +33,6 @@ export default class Settings extends React.Component<
     super(props);
     this.state = {};
   }
-
-  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const target = event.target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-    const name = target.name;
-    this.setState({
-      [name]: value,
-    });
-  };
 
   onFocus = () => {
     const settings = document.getElementById(HtmlElementId.settings);
@@ -217,6 +209,20 @@ export default class Settings extends React.Component<
                 <option>2</option>
                 <option>4</option>
               </select>
+            </div>
+          </section>,
+          <section className="settings">
+            <label htmlFor={HtmlElementId.minimap}>Minimap:&nbsp;</label>
+            <div className="input-and-undo-button">
+              <label className={'checkbox-input-label'}>
+                <input
+                  id={HtmlElementId.minimap}
+                  name={HtmlElementId.minimap}
+                  type="checkbox"
+                  checked={this.props.minimap}
+                  onChange={this.props.handleInputChange}
+                />
+              </label>
             </div>
           </section>,
           <section className="settings">
