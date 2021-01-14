@@ -62,7 +62,7 @@ const initialState = {
   showSettings: true,
   tabSize: 2,
   text: '',
-  theme: 'vs-dark',
+  theme: 'sn-theme',
   wordWrap: 'on',
 };
 
@@ -352,12 +352,18 @@ export default class Editor extends React.Component<{}, EditorInterface> {
   render() {
     return (
       <div
-        className={HtmlElementId.snComponent + ' '}
+        className={HtmlElementId.snComponent + ' ' + this.state.theme}
         id={HtmlElementId.snComponent}
         tabIndex={0}
       >
         {this.state.showEditor && (
-          <div className={HtmlClassName.MonacoEditorContainerParentDiv}>
+          <div
+            className={
+              HtmlClassName.MonacoEditorContainerParentDiv +
+              ' ' +
+              this.state.theme
+            }
+          >
             <MonacoEditor
               fontSize={this.state.fontSize}
               language={this.state.language}
@@ -452,14 +458,203 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   let editor: monaco.editor.IStandaloneCodeEditor;
   useEffect(() => {
     if (divEl.current) {
-      //let darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const colorRegExp = /^#?([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?$/;
+      const whiteSpaceRegExp = /\s+/g;
+
+      let backgroundColor: string;
+      let tempBackgroundColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-background-color')
+        .replace(whiteSpaceRegExp, '');
+
+      if (!tempBackgroundColor.match(colorRegExp)) {
+        console.error('Error parsing background color', tempBackgroundColor);
+        backgroundColor = '#ffffff';
+      } else {
+        backgroundColor = tempBackgroundColor;
+      }
+
+      let borderColor: string;
+      let tempBorderColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-border-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempBorderColor.match(colorRegExp)) {
+        console.error('Error parsing border color', tempBorderColor);
+        borderColor = '#e3e3e3';
+      } else {
+        borderColor = tempBorderColor;
+      }
+
+      let contrastBackgroundColor: string;
+      let tempContrastBackgroundColor = getComputedStyle(
+        document.documentElement
+      )
+        .getPropertyValue('--sn-stylekit-contrast-background-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempContrastBackgroundColor.match(colorRegExp)) {
+        console.error(
+          'Error parsing contrast background color',
+          tempContrastBackgroundColor
+        );
+        contrastBackgroundColor = '#F6F6F6';
+      } else {
+        contrastBackgroundColor = tempContrastBackgroundColor;
+      }
+
+      let dangerColor: string;
+      let tempDangerColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-danger-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempDangerColor.match(colorRegExp)) {
+        console.error('Error parsing danger color', tempDangerColor);
+        dangerColor = '#F80324'; // Red
+      } else {
+        dangerColor = tempDangerColor;
+      }
+
+      let foregroundColor: string;
+      let fadedForegroundColor: string;
+      let fadedTwiceForegroundColor: string;
+      let tempForegroundColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-foreground-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempForegroundColor.match(colorRegExp)) {
+        console.error('Error parsing foreground color', tempForegroundColor);
+        foregroundColor = '#000000';
+        fadedForegroundColor = '#00000099'; /** 60 */
+        fadedTwiceForegroundColor = '#0000001A'; /** 10 */
+      } else {
+        foregroundColor = tempForegroundColor;
+        if (!foregroundColor.concat('99').match(colorRegExp)) {
+          fadedForegroundColor = '#00000099'; /** 60 */
+          fadedTwiceForegroundColor = '#0000001A'; /** 10 */
+        } else {
+          fadedForegroundColor = tempForegroundColor.concat('99'); /** 60% */
+          fadedTwiceForegroundColor = tempForegroundColor.concat(
+            '1A'
+          ); /** 10% */
+        }
+      }
+
+      let infoColor: string;
+      let fadedInfoColor: string;
+      let fadedTwiceInfoColor: string;
+      let tempInfoColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-info-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempInfoColor.match(colorRegExp)) {
+        console.error('Error parsing info color', tempInfoColor);
+        infoColor = '#086dd6';
+        fadedInfoColor = '#086dd666'; /** 40% */
+        fadedTwiceInfoColor = '#086dd633'; /** 20% */
+      } else {
+        infoColor = tempInfoColor;
+        /** You only need to test for one */
+        if (!tempInfoColor.concat('66').match(colorRegExp)) {
+          fadedInfoColor = '#086dd666';
+          fadedTwiceInfoColor = '#086dd633';
+        } else {
+          fadedInfoColor = tempInfoColor.concat('66'); // This is 40% opacity
+          fadedTwiceInfoColor = tempInfoColor.concat('33'); // This is 20% opacity
+        }
+      }
+
+      let shadowColor: string;
+      let tempShadowColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-shadow-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempShadowColor.match(colorRegExp)) {
+        console.error('Error parsing shadow color', tempShadowColor);
+        shadowColor = '#C8C8C8'; // Gray shadow
+      } else {
+        shadowColor = tempShadowColor;
+      }
+
+      let warningColor: string;
+      let tempWarningColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--sn-stylekit-warning-color')
+        .replace(whiteSpaceRegExp, '');
+      if (!tempWarningColor.match(colorRegExp)) {
+        console.error('Error parsing warning color', tempWarningColor);
+        warningColor = '#f6a200'; // Orange
+      } else {
+        warningColor = tempWarningColor;
+      }
+
+      let darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (theme === 'sn-theme') {
+        monaco.editor.defineTheme('sn-theme', {
+          /** If sn-theme, then if not dark mode, use vs. Otherwise, use vs-dark (default) */
+          base: !darkMode ? 'vs' : 'vs-dark',
+          inherit: true,
+          rules: [
+            {
+              token: '',
+              background: backgroundColor,
+              foreground: foregroundColor,
+            },
+          ],
+          colors: {
+            /** Ordered in mostly alphabetical order */
+            //foreground: foregroundColor /* Overall foreground color. This color is only used if not overridden by a component.
+
+            'button.background': backgroundColor, // Button background color.
+            'button.foreground': foregroundColor, // Button foreground color.
+            'button.hoverBackground': contrastBackgroundColor, // Button background color when hovering.
+
+            /** This is what you see when you right click */
+            'dropdown.background': contrastBackgroundColor, // Dropdown background.
+            'dropdown.border': borderColor, // Dropdown border.
+            'dropdown.foreground': foregroundColor, // Dropdown foreground.,
+
+            'editor.background': backgroundColor, //
+            'editor.foreground': foregroundColor, //
+            'editor.inactiveSelectionBackground': fadedTwiceInfoColor, // Color of the selection in an inactive editor.
+            'editor.lineHighlightBorder': fadedTwiceForegroundColor, // Background color for the border around the line at the cursor position.
+            'editor.selectionBackground': fadedInfoColor, // Color of the editor selection.
+
+            'editorCursor.foreground': fadedForegroundColor, //Color of the editor cursor.
+            'editorError.foreground': dangerColor, // Foreground color of error squigglies in the editor.
+
+            'editorLineNumber.foreground': fadedForegroundColor, // Color of editor line numbers.
+            'editorLink.activeForeground': infoColor, // Color of active links. Such as when you press ctrl when hovering over a link
+
+            'editorWidget.background': contrastBackgroundColor, // Background color of editor widgets, such as find/replace.
+            'editorWidget.border': borderColor, // Border color of editor widgets. The color is only used if the widget chooses to have a border and if the color is not overridden by a widget.
+            'editorWarning.foreground': warningColor, // Foreground color of warning squigglies in the editor.
+
+            focusBorder: infoColor, // Overall border color for focused elements. This color is only used if not overridden by a component.
+
+            'input.background': backgroundColor, //,// Input box background.
+            'input.border': borderColor, // Input box border.
+            'input.foreground': foregroundColor, // Input box foreground.
+
+            'list.focusBackground': fadedInfoColor, // List/Tree background color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+            'list.focusForeground': foregroundColor, // List/Tree foreground color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+            'list.activeSelectionBackground': fadedInfoColor, // List/Tree background color for the selected item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+            'list.activeSelectionForeground': foregroundColor, // List/Tree foreground color for the selected item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+            'list.inactiveSelectionBackground': backgroundColor, // List/Tree background color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.
+            'list.inactiveSelectionForeground': foregroundColor, // List/Tree foreground color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.
+            'list.hoverBackground': backgroundColor, // List/Tree background when hovering over items using the mouse.
+            'list.hoverForeground': foregroundColor, // List/Tree foreground when hovering over items using the mouse.
+            'list.dropBackground': backgroundColor, // List/Tree drag and drop background when moving items around using the mouse.
+            'list.highlightForeground': foregroundColor, // List/Tree foreground color of the match highlights when searching inside the list/tree.
+
+            'textLink.activeForeground': infoColor, // Foreground color for active links in text. // Not sure where this is used.
+            'textLink.foreground': infoColor, // Foreground color for links in text (such as "Follow Link")
+
+            'widget.shadow': shadowColor, // Shadow color of widgets such as find/replace inside the editor.
+          },
+        });
+        monaco.editor.setTheme(theme);
+      }
+
       editor = monaco.editor.create(divEl.current, {
         // These are variable: customizable by user or dependent on props
+        //fontFamily: 'var(--sn-stylekit-monospace-font)',
         fontSize: parseInt(fontSize.replace('px', '')),
         language: language,
         tabSize: tabSize,
-        /** if sn-theme, then if not dark mode, use vs. otherwise use vs-dark (default) */
-        theme: theme === 'sn-theme' ? 'vs-dark' : theme,
+        theme: theme,
         //@ts-ignore
         wordWrap: wordWrap,
 
