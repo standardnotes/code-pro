@@ -688,7 +688,7 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
 
       editor = monaco.editor.create(divEl.current, {
         // These are variable: customizable by user or dependent on props
-        //fontFamily: 'var(--sn-stylekit-monospace-font)',
+        fontFamily: 'var(--sn-stylekit-monospace-font)',
         fontSize: parseInt(fontSize.replace('px', '')),
         language: language,
         minimap: {
