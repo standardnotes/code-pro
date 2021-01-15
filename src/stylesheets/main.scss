@@ -207,6 +207,11 @@ html {
     color: var(--sn-stylekit-foreground-color) !important;
   }
 
+  /* Mini Map */
+  .monaco-editor .minimap-shadow-visible {
+    box-shadow: var(--sn-stylekit-shadow-color) -6px 0 6px -6px inset;
+  }
+
   /* Quick input widget */
   .quick-input-widget.show-file-icons {
     background-color: var(--sn-stylekit-contrast-background-color) !important;

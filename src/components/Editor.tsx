@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef, useEffect } from 'react';
 import { EditorKit, EditorKitDelegate } from 'sn-editor-kit';
 import * as monaco from 'monaco-editor';
@@ -33,6 +32,10 @@ export enum HtmlElementId {
   wordWrap = 'wordWrap',
   saveAsDefault = 'saveAsDefault',
 
+  buttonLoadSettings = 'buttonLoadSettings',
+  buttonRefreshEditor = 'buttonRefreshEditor',
+  buttonSaveSettings = 'buttonSaveSettings',
+
   MonacoEditorContainer = 'MonacoEditorContainer',
   settings = 'settings',
   settingsToggleButton = 'settingsToggleButton',
@@ -52,7 +55,8 @@ export interface SettingsInterface {
 export interface EditorInterface extends SettingsInterface {
   text: string;
   platform?: string;
-  showEditor?: boolean;
+  refreshToken: boolean;
+  showEditor: boolean;
   showSettings: boolean;
   /** this is used for handleSelectChange, but could mess with type checking */
   [x: string]: string | number | boolean | undefined;
@@ -62,6 +66,8 @@ const initialState = {
   fontSize: '16px',
   language: 'markdown',
   minimap: true,
+  refreshToken: false,
+  showEditor: false,
   showSettings: true,
   tabSize: 2,
   text: '',
@@ -72,9 +78,12 @@ const initialState = {
 const debugMode = false;
 let keyMap = new Map();
 
+let editor: monaco.editor.IStandaloneCodeEditor;
+let diffEditor: monaco.editor.IStandaloneDiffEditor;
 let lastBackgroundColor = 'white';
 let lastDarkMode = true;
 let lastPosition: monaco.IPosition;
+let lastRefreshToken = false;
 let wasEditorFocused = true;
 
 export default class Editor extends React.Component<{}, EditorInterface> {
@@ -82,7 +91,6 @@ export default class Editor extends React.Component<{}, EditorInterface> {
 
   constructor(props: EditorInterface) {
     super(props);
-    this.configureEditorKit();
     this.state = initialState;
   }
 
@@ -92,14 +100,14 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       setEditorRawText: (text: string) => {
         this.setState(
           {
-            ...initialState,
+            showEditor: false,
             text,
           },
           () => {
-            this.loadDefaultSettings(this.refreshEditor);
+            /** Wait until the text has been loaded to show the editor */
+            this.setState({ showEditor: true });
+            this.loadDefaultSettings(() => {});
             this.loadSettings();
-            /** This refreshes the editor */
-            this.refreshEditor();
           }
         );
       },
@@ -115,6 +123,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
   };
 
   componentDidMount = () => {
+    this.configureEditorKit();
     setTimeout(() => {
       const note = this.editorKit.internal.note;
       /** This runs if there's no note */
@@ -151,22 +160,14 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         const loadedSettings = JSON.parse(
           note.content.codeEditorSettings
         ) as SettingsInterface;
-        if (debugMode) {
-          console.log('loadedSettings', loadedSettings);
-        }
-        this.setState(
-          {
-            fontSize: loadedSettings.fontSize,
-            language: loadedSettings.language,
-            minimap: loadedSettings.minimap,
-            tabSize: loadedSettings.tabSize,
-            theme: loadedSettings.theme,
-            wordWrap: loadedSettings.wordWrap,
-          },
-          () => {
-            this.refreshEditor();
-          }
-        );
+        this.setState({
+          fontSize: loadedSettings.fontSize,
+          language: loadedSettings.language,
+          minimap: loadedSettings.minimap,
+          tabSize: loadedSettings.tabSize,
+          theme: loadedSettings.theme,
+          wordWrap: loadedSettings.wordWrap,
+        });
       }
     });
   };
@@ -240,7 +241,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       );
     } catch (error) {
       // Log outside debug mode
-      console.log('Error loading editor options:', error);
+      console.error('Error loading editor options:', error);
     }
   };
 
@@ -255,7 +256,6 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       () => {
         if (name === 'minimap') {
           this.saveSettings();
-          this.refreshEditor();
         }
       }
     );
@@ -268,7 +268,6 @@ export default class Editor extends React.Component<{}, EditorInterface> {
     this.setState(
       {
         [name]: value,
-        showEditor: false,
       },
       () => {
         if (debugMode) {
@@ -279,9 +278,6 @@ export default class Editor extends React.Component<{}, EditorInterface> {
               event.target.value
           );
         }
-        this.setState({
-          showEditor: true,
-        });
         this.saveSettings();
       }
     );
@@ -306,16 +302,9 @@ export default class Editor extends React.Component<{}, EditorInterface> {
   };
 
   refreshEditor = () => {
-    this.setState(
-      {
-        showEditor: false,
-      },
-      () => {
-        this.setState({
-          showEditor: true,
-        });
-      }
-    );
+    this.setState({
+      refreshToken: !this.state.refreshToken,
+    });
   };
 
   toggleShowSettings = () => {
@@ -350,23 +339,13 @@ export default class Editor extends React.Component<{}, EditorInterface> {
     } else if (e.altKey && e.code === 'KeyZ') {
       /** Toggle word wrap with Alt + Z */
       if (this.state.wordWrap === 'on') {
-        this.setState(
-          {
-            wordWrap: 'off',
-          },
-          () => {
-            this.refreshEditor();
-          }
-        );
+        this.setState({
+          wordWrap: 'off',
+        });
       } else if (this.state.wordWrap === 'off') {
-        this.setState(
-          {
-            wordWrap: 'on',
-          },
-          () => {
-            this.refreshEditor();
-          }
-        );
+        this.setState({
+          wordWrap: 'on',
+        });
       }
     }
   };
@@ -382,29 +361,30 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         id={HtmlElementId.snComponent}
         tabIndex={0}
       >
-        {this.state.showEditor && (
-          <div
-            className={
-              HtmlClassName.MonacoEditorContainerParentDiv +
-              ' ' +
-              this.state.theme +
-              ' ' +
-              (this.state.showSettings ? 'showSettings' : 'hideSettings')
-            }
-          >
+        <div
+          className={
+            HtmlClassName.MonacoEditorContainerParentDiv +
+            ' ' +
+            this.state.theme +
+            ' ' +
+            (this.state.showSettings ? 'showSettings' : 'hideSettings')
+          }
+        >
+          {this.state.showEditor && (
             <MonacoEditor
               fontSize={this.state.fontSize}
               language={this.state.language}
               minimap={this.state.minimap}
               onKeyDown={this.onKeyDown}
+              refreshToken={this.state.refreshToken}
               saveText={this.saveText}
               tabSize={this.state.tabSize}
               text={this.state.text}
               theme={this.state.theme}
               wordWrap={this.state.wordWrap}
             />
-          </div>
-        )}
+          )}
+        </div>
         <Settings
           debugMode={debugMode}
           fontSize={this.state.fontSize}
@@ -468,6 +448,7 @@ interface MonacoEditorTypes {
   minimap: boolean;
   onKeyDown: Function;
   onKeyUp?: Function;
+  refreshToken: boolean;
   saveText: Function;
   tabSize: number;
   text: string;
@@ -481,6 +462,7 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   language = 'javascript',
   minimap = true,
   onKeyDown,
+  refreshToken,
   saveText,
   tabSize = 2,
   text,
@@ -488,7 +470,6 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   wordWrap = 'on',
 }) => {
   const divEl = useRef<HTMLDivElement>(null);
-  let editor: monaco.editor.IStandaloneCodeEditor;
   useEffect(() => {
     if (divEl.current) {
       const defineSnTheme = () => {
@@ -780,14 +761,19 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
         editor.setPosition(lastPosition);
       }
       /* If editor was previously focused, or is loaded the first time, focus again */
-      if (wasEditorFocused) {
+      if (wasEditorFocused || refreshToken !== lastRefreshToken) {
+        lastRefreshToken = refreshToken;
         editor.focus();
       }
     }
     return () => {
       editor.dispose();
     };
-  }, []);
+    /** Do not include text so useEffect doesn't activate on each edit
+     * A change in these things will cause a refresh of the editor.
+     */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fontSize, language, minimap, refreshToken, tabSize, theme, wordWrap]);
   return (
     <div
       id={id}
@@ -875,7 +861,6 @@ export const MonacoDiffEditor: React.FC<MonacoDiffEditorTypes> = ({
   theme = 'vs-dark',
 }) => {
   const divEl = useRef<HTMLDivElement>(null);
-  let diffEditor: monaco.editor.IStandaloneDiffEditor;
 
   if (fontSize === '') {
     fontSize = '16px';
@@ -926,7 +911,9 @@ export const MonacoDiffEditor: React.FC<MonacoDiffEditorTypes> = ({
     return () => {
       diffEditor.dispose();
     };
-  }, []);
+    /** Do not include text so the editor doesn't refresh on each edit */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fontSize, language, modifiedText, theme]);
   return (
     <div id={id} className={MonacoDiffEditorContainerID} ref={divEl}></div>
   );

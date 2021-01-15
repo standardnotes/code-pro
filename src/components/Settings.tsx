@@ -50,8 +50,7 @@ export default class Settings extends React.Component<
 
   loadDefaultSettings = () => {
     const callback = () => {
-      /** Refresh the editor and save settings after loading default */
-      this.props.refreshEditor();
+      /** Save settings after loading the default settings */
       this.props.saveSettings();
     };
     this.props.loadDefaultSettings(callback);
@@ -88,7 +87,7 @@ export default class Settings extends React.Component<
           )}
         </section>
         {this.props.showSettings && [
-          <section className="settings language">
+          <section className="settings language" key={HtmlElementId.language}>
             <label
               htmlFor={HtmlElementId.language}
               title={'Programming language. Default is Markdown'}
@@ -176,7 +175,7 @@ export default class Settings extends React.Component<
               </select>
             </div>
           </section>,
-          <section className="settings">
+          <section className="settings" key={HtmlElementId.fontSize}>
             <label
               htmlFor={HtmlElementId.fontSize}
               title={'Font size in pixels. Default is 16px (12pt)'}
@@ -209,7 +208,7 @@ export default class Settings extends React.Component<
               </select>
             </div>
           </section>,
-          <section className="settings">
+          <section className="settings" key={HtmlElementId.tabSize}>
             <label
               htmlFor={HtmlElementId.tabSize}
               title={
@@ -233,7 +232,7 @@ export default class Settings extends React.Component<
               </select>
             </div>
           </section>,
-          <section className="settings">
+          <section className="settings" key={HtmlElementId.minimap}>
             <label
               htmlFor={HtmlElementId.minimap}
               title={'Toggle show minimap. Default is on (checked)'}
@@ -253,7 +252,7 @@ export default class Settings extends React.Component<
               </label>
             </div>
           </section>,
-          <section className="settings">
+          <section className="settings" key={HtmlElementId.theme}>
             <label
               htmlFor={HtmlElementId.theme}
               title={'Theme for your code editor. Default is sn-theme'}
@@ -275,7 +274,7 @@ export default class Settings extends React.Component<
               </select>
             </div>
           </section>,
-          <section className="settings">
+          <section className="settings" key={HtmlElementId.wordWrap}>
             <label
               htmlFor={HtmlElementId.wordWrap}
               title={'Option to wrap long lines of text. Default is on'}
@@ -301,6 +300,8 @@ export default class Settings extends React.Component<
           {this.props.showSettings && [
             <button
               className={'sk-button button sk-secondary-contrast'}
+              key={HtmlElementId.buttonSaveSettings}
+              id={HtmlElementId.buttonSaveSettings}
               onClick={this.props.saveDefaultSettings}
               title="Save current settings as your personal default"
             >
@@ -308,6 +309,8 @@ export default class Settings extends React.Component<
             </button>,
             <button
               className={'sk-button button sk-secondary-contrast'}
+              key={HtmlElementId.buttonLoadSettings}
+              id={HtmlElementId.buttonLoadSettings}
               onClick={this.loadDefaultSettings}
               title="Load your personal default settings"
             >
@@ -316,6 +319,8 @@ export default class Settings extends React.Component<
           ]}
           <button
             className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonRefreshEditor}
+            id={HtmlElementId.buttonRefreshEditor}
             onClick={this.props.refreshEditor}
             title="Refresh and resize the editor"
           >
