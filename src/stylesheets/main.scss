@@ -31,21 +31,18 @@ html {
   @media screen and (max-width: 420px) {
     min-height: -webkit-fill-available;
   }
-
   &.vs {
     background-color: #fffffe;
     .settings {
       color: #000000;
     }
   }
-
   &.vs-dark {
     background-color: #1e1e1e;
     .settings {
       color: #d4d4d4;
     }
   }
-
   &.hc-black {
     background-color: #000000;
     .settings {
@@ -170,9 +167,64 @@ html {
 }
 
 .sn-theme {
+  .monaco-editor .line-numbers {
+    color: var(--sn-stylekit-foreground-color);
+    opacity: 0.6;
+  }
+
+  /** This is the editing / input container */
+  .monaco-editor,
+  .monaco-editor-background,
+  .monaco-editor .inputarea.ime-input {
+    background-color: var(--sn-stylekit-background-color);
+  }
   /* This is the line numbers and preview on the right */
   .monaco-editor .margin {
     background-color: var(--sn-stylekit-background-color);
+  }
+
+  /* Find widget */
+  .monaco-editor .find-widget {
+    box-shadow: 0 2px 8px var(--sn-stylekit-shadow-color);
+    background-color: var(--sn-stylekit-contrast-background-color);
+  }
+  .monaco-editor .find-widget > .find-part .monaco-inputbox,
+  .monaco-editor .find-widget > .replace-part .monaco-inputbox {
+    background-color: var(--sn-stylekit-background-color) !important;
+    border-color: var(--sn-stylekit-border-color) !important;
+  }
+
+  .monaco-editor .find-widget .monaco-inputbox.synthetic-focus {
+    outline-color: var(--sn-stylekit-info-color);
+  }
+  .monaco-editor .find-widget > .find-part .monaco-inputbox > .wrapper > .input,
+  .monaco-editor
+    .find-widget
+    > .replace-part
+    .monaco-inputbox
+    > .wrapper
+    > .input {
+    color: var(--sn-stylekit-foreground-color) !important;
+  }
+
+  /* Quick input widget */
+  .quick-input-widget.show-file-icons {
+    background-color: var(--sn-stylekit-contrast-background-color) !important;
+    color: var(--sn-stylekit-foreground-color) !important;
+    box-shadow: var(--sn-stylekit-shadow-color) 0px 5px 8px !important;
+  }
+
+  .monaco-list .monaco-list-row.focused {
+    color: var(--sn-stylekit-foreground-color) !important;
+  }
+  .monaco-list .monaco-list-row.focused:hover {
+    color: var(--sn-stylekit-foreground-color) !important;
+  }
+  .quick-input-list .quick-input-list-entry {
+    border-top-color: var(--sn-stylekit-border-color) !important; //#cccedb;
+  }
+  .quick-input-list .quick-input-list-separator {
+    color: var(--sn-stylekit-info-color); // #0066bf;
   }
 
   /* This is for the text in the list when you right click and press F1 */
@@ -187,22 +239,126 @@ html {
     color: var(--sn-stylekit-danger-color);
   }
 
+  // not sure if this works
+  .monaco-list .monaco-list-row {
+    background-color: var(--sn-stylekit-contrast-background-color);
+  }
+
+  .monaco-list:focus .monaco-list-row.focused {
+    background-color: var(--sn-stylekit-info-color);
+    //opacity: 0.2;
+    //background-color: rgba(8, 109, 214, 0.4);
+  }
+  .monaco-list:focus .monaco-list-row.focused:hover {
+    //background-color: rgba(8, 109, 214, 0.4);
+    background-color: var(--sn-stylekit-info-color);
+    //opacity: 0.2;
+  }
+  .monaco-list:focus .monaco-list-row.focused {
+    //color: #d8d8d8;
+    background-color: var(--sn-stylekit-background-color);
+  }
+  /*.monaco-list:focus .monaco-list-row.selected { // Not sure where these are used
+    background-color: rgba(7, 97, 193, 0.4);
+  }
+  .monaco-list:focus .monaco-list-row.selected:hover {
+    background-color: rgba(7, 97, 193, 0.4);
+  }*/
+  .monaco-list:focus .monaco-list-row.selected {
+    //color: #d8d8d8;
+    background-color: var(--sn-stylekit-background-color);
+  }
+
+  .monaco-drag-image,
+  .monaco-list:focus .monaco-list-row.selected.focused {
+    //background-color: rgba(8, 109, 214, 0.4);
+    background-color: var(--sn-stylekit-info-color);
+    opacity: 0.4;
+  }
+
+  .monaco-drag-image,
+  .monaco-list:focus .monaco-list-row.selected.focused {
+    //color: #d8d8d8;
+    background-color: var(--sn-stylekit-background-color);
+  }
+
+  .monaco-list .monaco-list-row.selected {
+    //background-color: #20202b;
+    background-color: var(--sn-stylekit-background-color);
+  }
+  .monaco-list .monaco-list-row.selected:hover {
+    // background-color: #20202b;
+    background-color: var(--sn-stylekit-background-color);
+  }
+  .monaco-list .monaco-list-row.selected {
+    //color: #d8d8d8;
+    color: var(--sn-stylekit-foreground-color);
+  }
+  .monaco-list:not(.drop-target)
+    .monaco-list-row:hover:not(.selected):not(.focused) {
+    //background-color: #20202b;
+    background-color: var(--sn-stylekit-background-color);
+  }
+  .monaco-list .monaco-list-row:hover:not(.selected):not(.focused) {
+    //color: #d8d8d8;
+    color: var(--sn-stylekit-foreground-color);
+  }
+
+  .monaco-list.drop-target,
+  .monaco-list .monaco-list-rows.drop-target,
+  .monaco-list .monaco-list-row.drop-target {
+    background-color: var(--sn-stylekit-background-color) !important;
+    color: var(--sn-stylekit-foreground-color) !important;
+  }
+  /*
+  .monaco-list-type-filter {
+    background-color: #653723;
+  }
+  .monaco-list-type-filter {
+    border: 1px solid var(--sn-stylekit-border-color);
+  }
+  .monaco-list-type-filter.no-matches {
+    border: 1px solid var(--sn-stylekit-danger-color);
+  }
+  .monaco-list-type-filter {
+    box-shadow: 1px 1px 1px var(--sn-stylekit-shadow-color);
+  }*/
+
   /* This is for 'recently used' and 'other commands' */
   .monaco-editor .quick-input-list-separator {
     color: var(--sn-stylekit-info-color);
   }
 
   @media (prefers-color-scheme: light) {
+    /* This is for normal text */
+    .mtk10 {
+      color: var(--sn-stylekit-foreground-color);
+    }
     /* This is for headers */
     .mtk6 {
       color: var(--sn-stylekit-success-color);
     }
-
     /* This is for links */
     .mtk20,
-    .mtk20.detected-link {
+    .mtk20.detected-link,
+    .mtk21,
+    .mtk21.detected-link {
       color: var(--sn-stylekit-info-color);
-      opacity: 0.9;
+      opacity: 0.95;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    /* This is for headers */
+    .mtk9 {
+      color: var(--sn-stylekit-success-color);
+      opacity: 0.95;
+    }
+    /* This is for links */
+    .mtk5,
+    .mtk5.detected-link {
+      color: var(--sn-stylekit-info-color);
+      opacity: 0.95;
     }
   }
 }

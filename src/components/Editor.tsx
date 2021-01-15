@@ -71,7 +71,11 @@ const initialState = {
 
 const debugMode = false;
 let keyMap = new Map();
+
+let lastBackgroundColor = 'white';
+let lastDarkMode = true;
 let lastPosition: monaco.IPosition;
+let wasEditorFocused = true;
 
 export default class Editor extends React.Component<{}, EditorInterface> {
   editorKit: any;
@@ -487,7 +491,7 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   let editor: monaco.editor.IStandaloneCodeEditor;
   useEffect(() => {
     if (divEl.current) {
-      if (theme === 'sn-theme') {
+      const defineSnTheme = () => {
         const colorRegExp = /^#?([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?$/;
         const whiteSpaceRegExp = /\s+/g;
 
@@ -610,11 +614,11 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
           warningColor = tempWarningColor;
         }
 
-        let darkMode = window.matchMedia('(prefers-color-scheme: dark)')
+        let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
           .matches;
         monaco.editor.defineTheme('sn-theme', {
           /** If sn-theme, then if not dark mode, use vs. Otherwise, use vs-dark (default) */
-          base: !darkMode ? 'vs' : 'vs-dark',
+          base: !isDarkMode ? 'vs' : 'vs-dark',
           inherit: true,
           rules: [
             {
@@ -676,6 +680,10 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
           },
         });
         monaco.editor.setTheme(theme);
+      };
+
+      if (theme === 'sn-theme') {
+        defineSnTheme();
       }
 
       editor = monaco.editor.create(divEl.current, {
@@ -743,11 +751,38 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
           }
         }
       );
+
+      editor.onDidFocusEditorWidget(() => {
+        wasEditorFocused = true;
+
+        /** If the theme has changed or dark mode has changed, redefine the sn-theme */
+        let currentBackgroundColor = getComputedStyle(
+          document.documentElement
+        ).getPropertyValue('--sn-stylekit-background-color');
+        let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
+          .matches;
+        if (
+          lastBackgroundColor !== currentBackgroundColor ||
+          lastDarkMode !== isDarkMode
+        ) {
+          lastBackgroundColor = currentBackgroundColor;
+          lastDarkMode = isDarkMode;
+          defineSnTheme();
+        }
+      });
+
+      editor.onDidBlurEditorWidget(() => {
+        wasEditorFocused = false;
+      });
+
       if (lastPosition) {
         editor.revealLineInCenterIfOutsideViewport(lastPosition.lineNumber);
         editor.setPosition(lastPosition);
       }
-      editor.focus();
+      /* If editor was previously focused, or is loaded the first time, focus again */
+      if (wasEditorFocused) {
+        editor.focus();
+      }
     }
     return () => {
       editor.dispose();
