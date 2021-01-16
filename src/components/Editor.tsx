@@ -2,19 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import { EditorKit, EditorKitDelegate } from 'sn-editor-kit';
 import * as monaco from 'monaco-editor';
 
-/** Prettier */
-import prettier from 'prettier';
-import parserMarkdown from 'prettier/parser-markdown';
-
-import parserBabel from 'prettier/parser-babel';
-import parserCss from 'prettier/parser-postcss';
-import parserGraphql from 'prettier/parser-graphql';
-import parserHtml from 'prettier/parser-html';
-import parserTypescript from 'prettier/parser-typescript';
-import parserYaml from 'prettier/parser-yaml';
-
 /** Components */
 import Settings from './Settings';
+
+/** Lib */
+import { makePrettier } from '../lib/makePrettier';
 
 export enum HtmlClassName {
   MonacoEditorContainerParentDiv = 'MonacoEditorContainerParentDiv',
@@ -697,7 +689,7 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
           /** Format code */
           e.preventDefault();
           const previousPosition = lastPosition;
-          const formattedText = formatCode(language, editor.getValue());
+          const formattedText = makePrettier(language, editor.getValue());
           if (formattedText) {
             editor.setValue(formattedText);
           }
@@ -781,69 +773,6 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
       ref={divEl}
     ></div>
   );
-};
-
-/** Format code */
-export const formatCode = (language: string, text: string) => {
-  try {
-    if (language === 'css') {
-      const formattedText = prettier.format(text, {
-        parser: 'css',
-        plugins: [parserCss],
-      });
-      return formattedText;
-    } else if (language === 'graphql') {
-      const formattedText = prettier.format(text, {
-        parser: 'graphql',
-        plugins: [parserGraphql],
-      });
-      return formattedText;
-    } else if (language === 'markdown') {
-      const formattedText = prettier.format(text, {
-        parser: 'markdown',
-        plugins: [parserMarkdown],
-      });
-      return formattedText;
-    } else if (language === 'html') {
-      const formattedText = prettier.format(text, {
-        parser: 'html',
-        plugins: [parserHtml],
-      });
-      return formattedText;
-    } else if (language === 'javascript') {
-      const formattedText = prettier.format(text, {
-        parser: 'babel',
-        plugins: [parserBabel],
-      });
-      return formattedText;
-    } else if (language === 'less') {
-      const formattedText = prettier.format(text, {
-        parser: 'less',
-        plugins: [parserCss],
-      });
-      return formattedText;
-    } else if (language === 'typescript') {
-      const formattedText = prettier.format(text, {
-        parser: 'typescript',
-        plugins: [parserTypescript],
-      });
-      return formattedText;
-    } else if (language === 'scss') {
-      const formattedText = prettier.format(text, {
-        parser: 'scss',
-        plugins: [parserCss],
-      });
-      return formattedText;
-    } else if (language === 'yaml') {
-      const formattedText = prettier.format(text, {
-        parser: 'yaml',
-        plugins: [parserYaml],
-      });
-      return formattedText;
-    }
-  } catch (error) {
-    console.error('Error formatting code:', error);
-  }
 };
 
 /** For the Diff Editor Feature */
