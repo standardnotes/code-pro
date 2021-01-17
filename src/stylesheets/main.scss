@@ -259,6 +259,11 @@ html {
   }
 }
 
+.error-boundary > :nth-child(1),
+#viewContainer > div > :nth-child(1) {
+  margin-top: 0px;
+}
+
 /** Settings */
 #settingsContainer {
   display: flex;
