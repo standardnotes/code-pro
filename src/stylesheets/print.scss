@@ -9,4 +9,28 @@
   textarea {
     outline: none;
   }
+
+  html,
+  body {
+    overflow: unset;
+  }
+
+  #contentContainer {
+    height: 100%;
+    max-height: unset;
+    padding-top: 0px;
+    width: 100%;
+    #viewContainer {
+      width: 100% !important;
+      pre code {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    }
+  }
+
+  .MonacoEditorContainerParentDiv,
+  #settingsContainer {
+    display: none;
+  }
 }

@@ -9,6 +9,7 @@ import Settings from './Settings';
 import { makePrettier } from '../lib/makePrettier';
 import { getCodeText, renderMarkdown } from '../lib/renderMarkdown';
 import ErrorBoundary from './ErrorBoundary';
+import PrintDialog from './PrintDialog';
 
 export enum HtmlClassName {
   MonacoEditorContainerParentDiv = 'MonacoEditorContainerParentDiv',
@@ -26,8 +27,10 @@ export enum HtmlElementId {
   wordWrap = 'wordWrap',
   saveAsDefault = 'saveAsDefault',
 
+  buttonCancel = 'buttonCancel',
   buttonToggleEditMode = 'buttonToggleEditMode',
   buttonLoadSettings = 'buttonLoadSettings',
+  buttonPrint = 'buttonPrint',
   buttonRefreshEditor = 'buttonRefreshEditor',
   buttonSaveSettings = 'buttonSaveSettings',
   buttonToggleViewMode = 'buttonToggleViewMode',
@@ -50,9 +53,11 @@ export interface SettingsInterface {
 }
 
 export interface EditorInterface extends SettingsInterface {
+  confirmPrintUrl: boolean;
   editMode: boolean;
   text: string;
   platform?: string;
+  printUrl: boolean;
   refreshTokenEditor: boolean;
   refreshTokenView: boolean;
   showSettings: boolean;
@@ -62,10 +67,12 @@ export interface EditorInterface extends SettingsInterface {
 }
 
 const initialState = {
+  confirmPrintUrl: false,
   editMode: false,
   fontSize: '16px',
   language: 'markdown',
   minimap: true,
+  printUrl: true,
   refreshTokenEditor: false,
   refreshTokenView: false,
   showSettings: true,
@@ -257,6 +264,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         [name]: value,
       },
       () => {
+        /** Mini map is the only possible [name] */
         if (name === 'minimap') {
           this.saveSettings();
         }
@@ -413,6 +421,71 @@ export default class Editor extends React.Component<{}, EditorInterface> {
     }
   };
 
+  /** Printing */
+  cancelPrint = () => {
+    this.setState(
+      {
+        confirmPrintUrl: false,
+      },
+      () => {
+        const printButton = document.getElementById(HtmlElementId.buttonPrint);
+        if (printButton) {
+          printButton.focus();
+        }
+      }
+    );
+  };
+
+  confirmPrintUrl = () => {
+    if (!this.state.viewMode) {
+      this.toggleViewMode();
+    }
+    this.setState(
+      {
+        confirmPrintUrl: true,
+      },
+      () => {
+        const cancelPrint = document.getElementById(HtmlElementId.buttonCancel);
+        if (cancelPrint) {
+          cancelPrint.focus();
+        }
+      }
+    );
+  };
+
+  printUrlFalse = () => {
+    this.setState(
+      {
+        confirmPrintUrl: false,
+        printUrl: false,
+      },
+      () => {
+        this.printRenderedHtml();
+      }
+    );
+  };
+
+  printUrlTrue = () => {
+    this.setState(
+      {
+        confirmPrintUrl: false,
+        printUrl: true,
+      },
+      () => {
+        this.printRenderedHtml();
+      }
+    );
+  };
+
+  printRenderedHtml = () => {
+    window.print();
+    const printButton = document.getElementById(HtmlElementId.buttonPrint);
+    if (printButton) {
+      printButton.focus();
+    }
+  };
+
+  /** Events */
   onBlur = (e: React.FocusEvent) => {};
 
   onFocus = (e: React.FocusEvent) => {};
@@ -454,7 +527,9 @@ export default class Editor extends React.Component<{}, EditorInterface> {
             ' ' +
             (this.state.viewMode ? 'viewMode' : '') +
             ' ' +
-            (this.state.showSettings ? 'showSettings' : 'hideSettings')
+            (this.state.showSettings ? 'showSettings' : 'hideSettings') +
+            ' ' +
+            (this.state.printUrl ? 'print-url' : 'no-print-url')
           }
         >
           {this.state.editMode && (
@@ -490,10 +565,26 @@ export default class Editor extends React.Component<{}, EditorInterface> {
               />
             </ErrorBoundary>
           )}
+          {this.state.confirmPrintUrl && (
+            <ErrorBoundary>
+              <PrintDialog
+                cancelText="No, thanks"
+                confirmText="Yes, print URLs"
+                helpLink={
+                  'https://docs.standardnotes.org/usage/code-pro/#printing'
+                }
+                onUndo={this.cancelPrint}
+                onCancel={this.printUrlFalse}
+                onConfirm={this.printUrlTrue}
+                title={`Would you like to print URLs?`}
+              />
+            </ErrorBoundary>
+          )}
         </div>
         <ErrorBoundary>
           <Settings
             debugMode={debugMode}
+            confirmPrintUrl={this.confirmPrintUrl}
             editMode={this.state.editMode}
             fontSize={this.state.fontSize}
             handleInputChange={this.handleInputChange}

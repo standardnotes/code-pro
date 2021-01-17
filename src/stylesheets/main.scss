@@ -116,7 +116,8 @@ html {
 
 /* view mode */
 #viewContainer,
-.error-boundary {
+.error-boundary,
+.note-dialog {
   background-color: var(--sn-stylekit-background-color);
   font-size: var(--sn-stylekit-font-size-editor);
   @media screen and (max-width: 650px) {
@@ -309,6 +310,10 @@ html {
     max-height: 22.6px;
     padding: 0px 0.5em;
   }
+  input[type='checkbox' i]:hover,
+  select:hover {
+    cursor: pointer;
+  }
   .label {
     display: block;
     font-size: 16px;
@@ -444,6 +449,82 @@ html {
   background-color: var(--sn-stylekit-background-color);
   color: var(--sn-stylekit-foreground-color);
   font-size: var(--sn-stylekit-font-size-editor);
+}
+
+/* For Print */
+.note-overlay {
+  position: fixed !important;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+/* Also for Print */
+.note-dialog {
+  /* Positioning */
+  max-width: 700px;
+  width: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  /* Content */
+  line-height: normal;
+  padding: 0px;
+  /* Button */
+  button {
+    color: var(--sn-stylekit-foreground-color);
+    background-color: transparent;
+    border-width: 0px;
+    font-family: var(--sn-stylekit-sans-serif-font);
+    font-size: var(--sn-stylekit-font-size-editor);
+  }
+  button:hover {
+    background-color: var(--sn-stylekit-contrast-background-color);
+    cursor: pointer;
+  }
+  button:focus {
+    outline: -webkit-focus-ring-color auto 1px;
+    outline-color: -webkit-focus-ring-color;
+    outline-style: auto;
+    outline-width: 1px;
+  }
+  /* Title */
+  .title-section {
+    padding-top: 0px;
+    h1,
+    h2 {
+      margin: 0.2em 0px;
+    }
+  }
+  /* Section */
+  .sk-panel-section:last-child {
+    margin-bottom: 0px;
+  }
+  /* Footer */
+  .sk-button.info,
+  .sk-button.neutral {
+    font-size: var(--sn-stylekit-font-size-editor);
+    @media screen and (max-width: 650px) {
+      font-size: 18px;
+    }
+  }
+}
+
+.inline-text-and-svg {
+  display: inline-flex;
+  padding-left: 0px;
+  padding-right: 0px;
+  svg {
+    opacity: 0.75;
+    margin-bottom: auto;
+    margin-top: auto;
+  }
 }
 
 @import './print.scss';

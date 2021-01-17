@@ -4,6 +4,7 @@ import {
   ChevronIconRight,
   EyeIcon,
   PencilIcon,
+  PrintIcon,
   RefreshIcon,
   SaveIcon,
   WindowIcon,
@@ -12,6 +13,7 @@ import {
 import { HtmlElementId, SettingsInterface } from './Editor';
 
 interface SettingsProps extends SettingsInterface {
+  confirmPrintUrl: () => void;
   debugMode: boolean;
   editMode: boolean;
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -349,6 +351,15 @@ export default class Settings extends React.Component<
             title="Toggle View Mode"
           >
             <EyeIcon condition={this.props.viewMode} role={'button'} />
+          </button>
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonPrint}
+            id={HtmlElementId.buttonPrint}
+            onClick={this.props.confirmPrintUrl}
+            title="Print rendered note"
+          >
+            <PrintIcon role={'button'} />
           </button>
         </section>
       </div>
