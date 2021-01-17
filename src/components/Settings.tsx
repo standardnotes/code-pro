@@ -2,6 +2,8 @@ import React from 'react';
 import {
   ChevronIconDown,
   ChevronIconRight,
+  EyeIcon,
+  PencilIcon,
   RefreshIcon,
   SaveIcon,
   WindowIcon,
@@ -11,6 +13,7 @@ import { HtmlElementId, SettingsInterface } from './Editor';
 
 interface SettingsProps extends SettingsInterface {
   debugMode: boolean;
+  editMode: boolean;
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   loadDefaultSettings: (callback: () => void) => void;
@@ -18,7 +21,10 @@ interface SettingsProps extends SettingsInterface {
   saveSettings: () => void;
   saveDefaultSettings: () => void;
   showSettings: boolean;
+  toggleEditMode: () => void;
   toggleShowSettings: () => void;
+  toggleViewMode: () => void;
+  viewMode: boolean;
 }
 
 interface SettingsState {
@@ -325,6 +331,24 @@ export default class Settings extends React.Component<
             title="Refresh and resize the editor"
           >
             <WindowIcon role={'button'} />
+          </button>
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonToggleEditMode}
+            id={HtmlElementId.buttonToggleEditMode}
+            onClick={this.props.toggleEditMode}
+            title="Toggle Edit Mode"
+          >
+            <PencilIcon condition={this.props.editMode} role={'button'} />
+          </button>
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonToggleViewMode}
+            id={HtmlElementId.buttonToggleViewMode}
+            onClick={this.props.toggleViewMode}
+            title="Toggle View Mode"
+          >
+            <EyeIcon condition={this.props.viewMode} role={'button'} />
           </button>
         </section>
       </div>

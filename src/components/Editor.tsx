@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { EditorKit, EditorKitDelegate } from 'sn-editor-kit';
 import * as monaco from 'monaco-editor';
 
@@ -7,6 +7,7 @@ import Settings from './Settings';
 
 /** Lib */
 import { makePrettier } from '../lib/makePrettier';
+import { renderMarkdown } from '../lib/renderMarkdown';
 
 export enum HtmlClassName {
   MonacoEditorContainerParentDiv = 'MonacoEditorContainerParentDiv',
@@ -24,15 +25,18 @@ export enum HtmlElementId {
   wordWrap = 'wordWrap',
   saveAsDefault = 'saveAsDefault',
 
+  buttonToggleEditMode = 'buttonToggleEditMode',
   buttonLoadSettings = 'buttonLoadSettings',
   buttonRefreshEditor = 'buttonRefreshEditor',
   buttonSaveSettings = 'buttonSaveSettings',
+  buttonToggleViewMode = 'buttonToggleViewMode',
 
+  contentContainer = 'contentContainer',
   MonacoEditorContainer = 'MonacoEditorContainer',
-  settings = 'settings',
+  settings = 'settingsContainer',
   settingsToggleButton = 'settingsToggleButton',
   snComponent = 'sn-component',
-  textarea = 'textarea',
+  viewContainer = 'viewContainer',
 }
 
 export interface SettingsInterface {
@@ -45,25 +49,29 @@ export interface SettingsInterface {
 }
 
 export interface EditorInterface extends SettingsInterface {
+  editMode: boolean;
   text: string;
   platform?: string;
-  refreshToken: boolean;
-  showEditor: boolean;
+  refreshTokenEditor: boolean;
+  refreshTokenView: boolean;
   showSettings: boolean;
+  viewMode: boolean;
   /** this is used for handleSelectChange, but could mess with type checking */
   [x: string]: string | number | boolean | undefined;
 }
 
 const initialState = {
+  editMode: false,
   fontSize: '16px',
   language: 'markdown',
   minimap: true,
-  refreshToken: false,
-  showEditor: false,
+  refreshTokenEditor: false,
+  refreshTokenView: false,
   showSettings: true,
   tabSize: 2,
   text: '',
   theme: 'sn-theme',
+  viewMode: false,
   wordWrap: 'on',
 };
 
@@ -77,9 +85,11 @@ let lastDarkMode = true;
 let lastPosition: monaco.IPosition;
 let lastRefreshToken = false;
 let wasEditorFocused = true;
+let viewScrollTop = 0;
 
 export default class Editor extends React.Component<{}, EditorInterface> {
   editorKit: any;
+  saveTimer: NodeJS.Timeout | undefined;
 
   constructor(props: EditorInterface) {
     super(props);
@@ -92,12 +102,14 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       setEditorRawText: (text: string) => {
         this.setState(
           {
-            showEditor: false,
+            editMode: false,
             text,
           },
           () => {
             /** Wait until the text has been loaded to show the editor */
-            this.setState({ showEditor: true });
+            this.setState({
+              editMode: true,
+            });
             this.loadDefaultSettings(() => {});
             this.loadSettings();
           }
@@ -120,7 +132,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       const note = this.editorKit.internal.note;
       /** This runs if there's no note */
       if (note === undefined) {
-        this.setState({ showEditor: true });
+        this.setState({ editMode: true });
       }
     }, 500);
   };
@@ -277,9 +289,19 @@ export default class Editor extends React.Component<{}, EditorInterface> {
 
   saveText = (text: string) => {
     this.saveNote(text);
-    this.setState({
-      text: text,
-    });
+    this.setState(
+      {
+        text: text,
+      },
+      () => {
+        if (this.state.viewMode) {
+          if (this.saveTimer) {
+            clearTimeout(this.saveTimer);
+          }
+          this.refreshMarkdown();
+        }
+      }
+    );
   };
 
   saveNote = (text: string) => {
@@ -295,7 +317,20 @@ export default class Editor extends React.Component<{}, EditorInterface> {
 
   refreshEditor = () => {
     this.setState({
-      refreshToken: !this.state.refreshToken,
+      refreshTokenEditor: !this.state.refreshTokenEditor,
+    });
+  };
+
+  refreshMarkdown = () => {
+    this.saveTimer = setTimeout(() => {
+      renderMarkdown.cancel();
+      this.refreshView();
+    }, 550);
+  };
+
+  refreshView = () => {
+    this.setState({
+      refreshTokenView: !this.state.refreshTokenView,
     });
   };
 
@@ -317,6 +352,66 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         }
       }
     );
+  };
+
+  toggleEditMode = () => {
+    if (!this.state.editMode) {
+      this.setState({
+        editMode: true,
+      });
+    } else if (this.state.editMode) {
+      this.setState(
+        {
+          editMode: false,
+          viewMode: true,
+        },
+        () => {
+          /** do this even on the first time */
+          this.refreshMarkdown();
+        }
+      );
+    }
+  };
+
+  toggleViewMode = () => {
+    if (!this.state.viewMode) {
+      this.setState(
+        {
+          viewMode: true,
+        },
+        () => {
+          this.refreshEditor();
+          const view = document.getElementById(HtmlElementId.viewContainer);
+          if (view) {
+            view.scrollTop = viewScrollTop;
+          }
+          this.refreshMarkdown();
+        }
+      );
+    } else if (this.state.viewMode) {
+      /** Record the scroll top of the view container */
+      const view = document.getElementById(HtmlElementId.viewContainer);
+      if (view) {
+        viewScrollTop = view.scrollTop;
+      }
+      if (!this.state.editMode) {
+        /** If the editor is closed, then open it */
+        this.setState({
+          editMode: true,
+          viewMode: false,
+        });
+      } else if (this.state.editMode) {
+        this.setState(
+          {
+            viewMode: false,
+          },
+          () => {
+            /** If the editor is open, refresh the size */
+            this.refreshEditor();
+          }
+        );
+      }
+    }
   };
 
   onBlur = (e: React.FocusEvent) => {};
@@ -354,31 +449,48 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         tabIndex={0}
       >
         <div
+          id={HtmlElementId.contentContainer}
           className={
-            HtmlClassName.MonacoEditorContainerParentDiv +
+            (this.state.editMode ? 'editMode' : '') +
             ' ' +
-            this.state.theme +
+            (this.state.viewMode ? 'viewMode' : '') +
             ' ' +
             (this.state.showSettings ? 'showSettings' : 'hideSettings')
           }
         >
-          {this.state.showEditor && (
-            <MonacoEditor
-              fontSize={this.state.fontSize}
+          {this.state.editMode && (
+            <div
+              className={
+                HtmlClassName.MonacoEditorContainerParentDiv +
+                ' ' +
+                this.state.theme
+              }
+            >
+              <MonacoEditor
+                fontSize={this.state.fontSize}
+                language={this.state.language}
+                minimap={this.state.minimap}
+                onKeyDown={this.onKeyDown}
+                refreshTokenEditor={this.state.refreshTokenEditor}
+                saveText={this.saveText}
+                tabSize={this.state.tabSize}
+                text={this.state.text}
+                theme={this.state.theme}
+                wordWrap={this.state.wordWrap}
+              />
+            </div>
+          )}
+          {this.state.viewMode && (
+            <View
               language={this.state.language}
-              minimap={this.state.minimap}
-              onKeyDown={this.onKeyDown}
-              refreshToken={this.state.refreshToken}
-              saveText={this.saveText}
-              tabSize={this.state.tabSize}
+              refreshTokenView={this.state.refreshTokenView}
               text={this.state.text}
-              theme={this.state.theme}
-              wordWrap={this.state.wordWrap}
             />
           )}
         </div>
         <Settings
           debugMode={debugMode}
+          editMode={this.state.editMode}
           fontSize={this.state.fontSize}
           handleInputChange={this.handleInputChange}
           handleSelectChange={this.handleSelectChange}
@@ -391,7 +503,10 @@ export default class Editor extends React.Component<{}, EditorInterface> {
           showSettings={this.state.showSettings}
           tabSize={this.state.tabSize}
           theme={this.state.theme}
+          toggleEditMode={this.toggleEditMode}
           toggleShowSettings={this.toggleShowSettings}
+          toggleViewMode={this.toggleViewMode}
+          viewMode={this.state.viewMode}
           wordWrap={this.state.wordWrap}
         />
       </div>
@@ -440,7 +555,7 @@ interface MonacoEditorTypes {
   minimap: boolean;
   onKeyDown: Function;
   onKeyUp?: Function;
-  refreshToken: boolean;
+  refreshTokenEditor: boolean;
   saveText: Function;
   tabSize: number;
   text: string;
@@ -450,11 +565,11 @@ interface MonacoEditorTypes {
 
 export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   fontSize = '16px',
-  id = HtmlClassName.MonacoEditorContainer,
+  id = HtmlElementId.MonacoEditorContainer,
   language = 'javascript',
   minimap = true,
   onKeyDown,
-  refreshToken,
+  refreshTokenEditor,
   saveText,
   tabSize = 2,
   text,
@@ -753,8 +868,8 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
         editor.setPosition(lastPosition);
       }
       /* If editor was previously focused, or is loaded the first time, focus again */
-      if (wasEditorFocused || refreshToken !== lastRefreshToken) {
-        lastRefreshToken = refreshToken;
+      if (wasEditorFocused || refreshTokenEditor !== lastRefreshToken) {
+        lastRefreshToken = refreshTokenEditor;
         editor.focus();
       }
     }
@@ -765,7 +880,15 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
      * A change in these things will cause a refresh of the editor.
      */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fontSize, language, minimap, refreshToken, tabSize, theme, wordWrap]);
+  }, [
+    fontSize,
+    language,
+    minimap,
+    refreshTokenEditor,
+    tabSize,
+    theme,
+    wordWrap,
+  ]);
   return (
     <div
       id={id}
@@ -846,4 +969,26 @@ export const MonacoDiffEditor: React.FC<MonacoDiffEditorTypes> = ({
   return (
     <div id={id} className={MonacoDiffEditorContainerID} ref={divEl}></div>
   );
+};
+
+interface ViewProps {
+  language: string;
+  refreshTokenView: boolean;
+  text: string;
+}
+
+export const View: React.FC<ViewProps> = ({
+  language,
+  refreshTokenView, // used to manually refresh the markdown
+  text,
+}) => {
+  const [markdown, updateMarkdown] = useState(renderMarkdown(text));
+  useEffect(() => {
+    if (language !== 'markdown' && language !== 'html') {
+      updateMarkdown(renderMarkdown('```' + language + '\n' + text + '\n``'));
+    } else {
+      updateMarkdown(renderMarkdown(text));
+    }
+  }, [language, text, refreshTokenView]);
+  return <div id={HtmlElementId.viewContainer}>{markdown}</div>;
 };

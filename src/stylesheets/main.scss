@@ -1,4 +1,5 @@
 @import '~sn-stylekit/dist/stylekit.css';
+@import '~highlight.js/scss/vs.scss';
 
 :root {
   --sn-stylekit-font-size-editor: 16px;
@@ -16,6 +17,8 @@ html {
   margin: 0;
   padding: 0;
   width: 100%;
+  /* This is used to prevent KaTeX from overflowing the page */
+  overflow-y: hidden;
 }
 
 * {
@@ -51,46 +54,213 @@ html {
   }
 }
 
-/** Monaco */
-.MonacoEditorContainerParentDiv {
-  overflow-x: hidden !important;
-  overflow-y: hidden;
+/* Content */
+#contentContainer {
+  display: flex;
+  flex-direction: row;
+  padding-top: 1em;
+  &.editMode {
+    .MonacoEditorContainerParentDiv {
+      width: 100%;
+    }
+  }
+  &.viewMode {
+    #viewContainer {
+      width: 100%;
+    }
+  }
+  &.editMode.viewMode {
+    .MonacoEditorContainerParentDiv,
+    #viewContainer {
+      width: 50%;
+    }
+  }
+  height: var(--heightVar);
+  max-height: var(--heightVar);
+  min-height: var(--heightVar);
   // Hides the horizontal scroll bar when using the Monaco Editor
   // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
   --heightVar: calc(100vh - 3em);
-  @media screen and (max-width: 1068px) {
+  @media screen and (max-width: 1144px) {
     --heightVar: calc(100vh - 4.25em);
   }
-  @media screen and (max-width: 960px) {
+  @media screen and (max-width: 1036px) {
     --heightVar: calc(100vh - 5em);
   }
   /* For three lines of settings */
-  @media screen and (max-width: 739px) {
+  @media screen and (max-width: 815px) {
     --heightVar: calc(100vh - 5.5em);
   }
-  @media screen and (max-width: 655px) {
+  @media screen and (max-width: 731px) {
     --heightVar: calc(100vh - 6.5em);
   }
   /* Make settings small when hidden */
   &.hideSettings {
     --heightVar: calc(100vh - 3em);
   }
-  height: var(--heightVar);
-  max-height: var(--heightVar);
-  min-height: var(--heightVar);
-  padding-top: 1em;
+}
+
+/** Monaco Editor Parent div*/
+.MonacoEditorContainerParentDiv {
+  min-width: 150px;
+  overflow-x: hidden !important;
+  overflow-y: hidden;
+  width: 100%;
 }
 
 .MonacoEditorContainer,
 .MonacoDiffEditorContainer {
   height: 100%;
-  //margin-bottom: 1.5em;
   width: 100%;
 }
 
-/** Settings */
+/* view mode */
+#viewContainer {
+  font-size: var(--sn-stylekit-font-size-editor);
+  @media screen and (max-width: 650px) {
+    font-size: 18px;
+  }
+  line-height: 1.7;
+  overflow: auto;
+  padding: 0px 1em 1em;
 
-#settings {
+  a {
+    color: var(--sn-stylekit-info-color); // #086dd6;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  blockquote {
+    margin: 0;
+    margin-top: 0;
+    margin-bottom: 16px;
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+  }
+
+  hr {
+    border: 0.5px solid var(--sn-stylekit-border-color);
+  }
+
+  img {
+    max-width: 100%; // 645.500px;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+    margin-top: 0;
+    margin-bottom: 16px;
+    border-spacing: 0;
+    border-collapse: collapse;
+
+    tr {
+      background-color: transparent; // #fff;
+      border-top: 1px solid var(--sn-stylekit-contrast-border-color); // #c6cbd1;
+    }
+
+    td,
+    th {
+      padding: 6px 13px;
+      border: 1px solid var(--sn-stylekit-contrast-border-color); // #dfe2e5;
+    }
+
+    tr:nth-child(2n) {
+      background-color: var(
+        --sn-stylekit-contrast-background-color
+      ); // #f6f8fa;
+      code,
+      pre {
+        background-color: var(--sn-stylekit-background-color);
+      }
+    }
+  }
+  summary {
+    .link {
+      display: inline;
+      color: var(--sn-stylekit-info-color);
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: normal;
+  }
+
+  /* Code */
+  code,
+  pre {
+    font-family: var(--sn-stylekit-monospace-font);
+  }
+  .hljs {
+    color: var(--sn-stylekit-contrast-foreground-color);
+  }
+  .hljs-tag {
+    color: var(--sn-stylekit-foreground-color);
+  }
+
+  code {
+    box-sizing: border-box;
+    word-wrap: break-word;
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    background-color: var(
+      --sn-stylekit-contrast-background-color
+    ); // rgba(27,31,35,.05);
+    border-radius: 3px;
+  }
+
+  pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: var(
+      --sn-stylekit-contrast-background-color
+    ); // rgba(27,31,35,.05);// #f6f8fa; the latter doesn't work well on dark mode
+    color: var(--sn-stylekit-foreground-color);
+    border-radius: 3px;
+    word-wrap: normal;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+
+  pre > code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: initial;
+    border: 0;
+  }
+}
+
+/** Settings */
+#settingsContainer {
   display: flex;
   flex-direction: row;
   margin-bottom: auto;
@@ -151,7 +321,7 @@ html {
     //font-size: var(--sn-stylekit-font-size-editor);
     font-size: 16px;
   }
-  @media screen and (max-width: 960px) {
+  @media screen and (max-width: 1036px) {
     flex-direction: column;
     &.buttons {
       flex-direction: row;
@@ -159,6 +329,7 @@ html {
   }
 }
 
+/* Persist for all themes */
 .MonacoEditorContainer {
   /* This hides the shadow at the top of the editor */
   .monaco-editor .scroll-decoration {
@@ -166,6 +337,7 @@ html {
   }
 }
 
+/* Only for Sn theme */
 .sn-theme {
   .monaco-editor .line-numbers {
     color: var(--sn-stylekit-foreground-color);
