@@ -72,7 +72,43 @@ export default class Settings extends React.Component<
         onFocus={this.onFocus}
         onBlur={this.onBlur}
       >
-        <section className="settings">
+        <section className="settings buttons">
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonRefreshEditor}
+            id={HtmlElementId.buttonRefreshEditor}
+            onClick={this.props.refreshEditor}
+            title="Refresh and resize the editor"
+          >
+            <WindowIcon role={'button'} />
+          </button>
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonToggleEditMode}
+            id={HtmlElementId.buttonToggleEditMode}
+            onClick={this.props.toggleEditMode}
+            title="Toggle Edit Mode"
+          >
+            <PencilIcon condition={this.props.editMode} role={'button'} />
+          </button>
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonToggleViewMode}
+            id={HtmlElementId.buttonToggleViewMode}
+            onClick={this.props.toggleViewMode}
+            title="Toggle View Mode"
+          >
+            <EyeIcon condition={this.props.viewMode} role={'button'} />
+          </button>
+          <button
+            className={'sk-button button sk-secondary-contrast'}
+            key={HtmlElementId.buttonPrint}
+            id={HtmlElementId.buttonPrint}
+            onClick={this.props.confirmPrintUrl}
+            title="Print rendered note"
+          >
+            <PrintIcon role={'button'} />
+          </button>
           {!this.props.showSettings && (
             <button
               className={'sk-button button sk-secondary-contrast'}
@@ -325,42 +361,6 @@ export default class Settings extends React.Component<
               <RefreshIcon role={'button'} />
             </button>,
           ]}
-          <button
-            className={'sk-button button sk-secondary-contrast'}
-            key={HtmlElementId.buttonRefreshEditor}
-            id={HtmlElementId.buttonRefreshEditor}
-            onClick={this.props.refreshEditor}
-            title="Refresh and resize the editor"
-          >
-            <WindowIcon role={'button'} />
-          </button>
-          <button
-            className={'sk-button button sk-secondary-contrast'}
-            key={HtmlElementId.buttonToggleEditMode}
-            id={HtmlElementId.buttonToggleEditMode}
-            onClick={this.props.toggleEditMode}
-            title="Toggle Edit Mode"
-          >
-            <PencilIcon condition={this.props.editMode} role={'button'} />
-          </button>
-          <button
-            className={'sk-button button sk-secondary-contrast'}
-            key={HtmlElementId.buttonToggleViewMode}
-            id={HtmlElementId.buttonToggleViewMode}
-            onClick={this.props.toggleViewMode}
-            title="Toggle View Mode"
-          >
-            <EyeIcon condition={this.props.viewMode} role={'button'} />
-          </button>
-          <button
-            className={'sk-button button sk-secondary-contrast'}
-            key={HtmlElementId.buttonPrint}
-            id={HtmlElementId.buttonPrint}
-            onClick={this.props.confirmPrintUrl}
-            title="Print rendered note"
-          >
-            <PrintIcon role={'button'} />
-          </button>
         </section>
       </div>
     );

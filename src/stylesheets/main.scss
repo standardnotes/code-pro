@@ -81,17 +81,14 @@ html {
   // Hides the horizontal scroll bar when using the Monaco Editor
   // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
   --heightVar: calc(100vh - 3em);
-  @media screen and (max-width: 1144px) {
+  @media screen and (max-width: 1168px) {
     --heightVar: calc(100vh - 4.25em);
   }
-  @media screen and (max-width: 1036px) {
+  @media screen and (max-width: 1068px) {
     --heightVar: calc(100vh - 5em);
   }
   /* For three lines of settings */
-  @media screen and (max-width: 815px) {
-    --heightVar: calc(100vh - 5.5em);
-  }
-  @media screen and (max-width: 731px) {
+  @media screen and (max-width: 878px) {
     --heightVar: calc(100vh - 6.5em);
   }
   /* Make settings small when hidden */
@@ -271,14 +268,19 @@ html {
   opacity: 0.2;
   overflow-x: auto;
   padding-left: 1em;
+  padding-top: 0.1em;
   transition: opacity 400ms ease-out;
+  @media screen and (max-width: 878px) {
+    padding-bottom: 0.2em;
+  }
   @media screen and (max-width: 720px) {
     padding-left: 0.5em;
   }
   @media screen and (max-width: 500px) {
     opacity: 0.5;
   }
-  @media screen and (min-width: 801px) {
+  /* If screen is big enough to fit all buttons */
+  @media screen and (min-width: 879px) {
     &.hide {
       opacity: 0;
     }
@@ -295,10 +297,7 @@ html {
   color: var(--sn-stylekit-foreground-color);
   display: flex;
   padding-right: 0.5em;
-  @media screen and (max-width: 695px) {
-    padding-right: 0.2em;
-  }
-  .buttons {
+  &.buttons {
     padding-right: 0px;
   }
   &.buttons .button {
@@ -328,7 +327,7 @@ html {
     //font-size: var(--sn-stylekit-font-size-editor);
     font-size: 16px;
   }
-  @media screen and (max-width: 1036px) {
+  @media screen and (max-width: 1068px) {
     flex-direction: column;
     &.buttons {
       flex-direction: row;
