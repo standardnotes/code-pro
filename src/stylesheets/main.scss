@@ -115,7 +115,9 @@ html {
 }
 
 /* view mode */
-#viewContainer {
+#viewContainer,
+.error-boundary {
+  background-color: var(--sn-stylekit-background-color);
   font-size: var(--sn-stylekit-font-size-editor);
   @media screen and (max-width: 650px) {
     font-size: 18px;
@@ -437,5 +439,12 @@ html {
     }
   }
 }
+
+.error-boundary {
+  background-color: var(--sn-stylekit-background-color);
+  color: var(--sn-stylekit-foreground-color);
+  font-size: var(--sn-stylekit-font-size-editor);
+}
+
 @import './print.scss';
 @import './dark.scss';

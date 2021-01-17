@@ -8,6 +8,7 @@ import Settings from './Settings';
 /** Lib */
 import { makePrettier } from '../lib/makePrettier';
 import { renderMarkdown } from '../lib/renderMarkdown';
+import ErrorBoundary from './ErrorBoundary';
 
 export enum HtmlClassName {
   MonacoEditorContainerParentDiv = 'MonacoEditorContainerParentDiv',
@@ -469,49 +470,55 @@ export default class Editor extends React.Component<{}, EditorInterface> {
                 this.state.theme
               }
             >
-              <MonacoEditor
-                fontSize={this.state.fontSize}
-                language={this.state.language}
-                minimap={this.state.minimap}
-                onKeyDown={this.onKeyDown}
-                refreshTokenEditor={this.state.refreshTokenEditor}
-                saveText={this.saveText}
-                tabSize={this.state.tabSize}
-                text={this.state.text}
-                theme={this.state.theme}
-                wordWrap={this.state.wordWrap}
-              />
+              <ErrorBoundary>
+                <MonacoEditor
+                  fontSize={this.state.fontSize}
+                  language={this.state.language}
+                  minimap={this.state.minimap}
+                  onKeyDown={this.onKeyDown}
+                  refreshTokenEditor={this.state.refreshTokenEditor}
+                  saveText={this.saveText}
+                  tabSize={this.state.tabSize}
+                  text={this.state.text}
+                  theme={this.state.theme}
+                  wordWrap={this.state.wordWrap}
+                />
+              </ErrorBoundary>
             </div>
           )}
           {this.state.viewMode && (
-            <View
-              language={this.state.language}
-              refreshTokenView={this.state.refreshTokenView}
-              text={this.state.text}
-            />
+            <ErrorBoundary>
+              <View
+                language={this.state.language}
+                refreshTokenView={this.state.refreshTokenView}
+                text={this.state.text}
+              />
+            </ErrorBoundary>
           )}
         </div>
-        <Settings
-          debugMode={debugMode}
-          editMode={this.state.editMode}
-          fontSize={this.state.fontSize}
-          handleInputChange={this.handleInputChange}
-          handleSelectChange={this.handleSelectChange}
-          language={this.state.language}
-          minimap={this.state.minimap}
-          loadDefaultSettings={this.loadDefaultSettings}
-          refreshEditor={this.refreshEditor}
-          saveSettings={this.saveSettings}
-          saveDefaultSettings={this.saveDefaultSettings}
-          showSettings={this.state.showSettings}
-          tabSize={this.state.tabSize}
-          theme={this.state.theme}
-          toggleEditMode={this.toggleEditMode}
-          toggleShowSettings={this.toggleShowSettings}
-          toggleViewMode={this.toggleViewMode}
-          viewMode={this.state.viewMode}
-          wordWrap={this.state.wordWrap}
-        />
+        <ErrorBoundary>
+          <Settings
+            debugMode={debugMode}
+            editMode={this.state.editMode}
+            fontSize={this.state.fontSize}
+            handleInputChange={this.handleInputChange}
+            handleSelectChange={this.handleSelectChange}
+            language={this.state.language}
+            minimap={this.state.minimap}
+            loadDefaultSettings={this.loadDefaultSettings}
+            refreshEditor={this.refreshEditor}
+            saveSettings={this.saveSettings}
+            saveDefaultSettings={this.saveDefaultSettings}
+            showSettings={this.state.showSettings}
+            tabSize={this.state.tabSize}
+            theme={this.state.theme}
+            toggleEditMode={this.toggleEditMode}
+            toggleShowSettings={this.toggleShowSettings}
+            toggleViewMode={this.toggleViewMode}
+            viewMode={this.state.viewMode}
+            wordWrap={this.state.wordWrap}
+          />
+        </ErrorBoundary>
       </div>
     );
   }
