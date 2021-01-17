@@ -370,11 +370,9 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       this.setState(
         {
           editMode: false,
-          viewMode: true,
         },
         () => {
-          /** do this even on the first time */
-          this.refreshMarkdown();
+          this.toggleViewMode();
         }
       );
     }
