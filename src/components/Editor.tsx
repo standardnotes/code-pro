@@ -282,6 +282,9 @@ export default class Editor extends React.Component<{}, EditorInterface> {
               event.target.value
           );
         }
+        if (name === 'language') {
+          this.refreshMarkdown();
+        }
         this.saveSettings();
       }
     );
@@ -982,13 +985,22 @@ export const View: React.FC<ViewProps> = ({
   refreshTokenView, // used to manually refresh the markdown
   text,
 }) => {
-  const [markdown, updateMarkdown] = useState(renderMarkdown(text));
-  useEffect(() => {
-    if (language !== 'markdown' && language !== 'html') {
-      updateMarkdown(renderMarkdown('```' + language + '\n' + text + '\n``'));
+  const updateLanguageText = (languageProps: string, textProps: string) => {
+    if (languageProps !== 'markdown' && languageProps !== 'html') {
+      return '```' + languageProps + '\n' + textProps + '\n```';
     } else {
-      updateMarkdown(renderMarkdown(text));
+      return textProps;
     }
-  }, [language, text, refreshTokenView]);
+  };
+
+  const [newText, updateNewText] = useState(updateLanguageText(language, text));
+  useEffect(() => {
+    updateNewText(updateLanguageText(language, text));
+  }, [language, text]);
+
+  const [markdown, updateMarkdown] = useState(renderMarkdown(newText));
+  useEffect(() => {
+    updateMarkdown(renderMarkdown(newText));
+  }, [newText, refreshTokenView]);
   return <div id={HtmlElementId.viewContainer}>{markdown}</div>;
 };
