@@ -58,7 +58,6 @@ html {
 #contentContainer {
   display: flex;
   flex-direction: row;
-  padding-top: 1em;
   &.editMode {
     .MonacoEditorContainerParentDiv {
       width: 100%;
@@ -76,32 +75,34 @@ html {
     }
   }
   height: var(--heightVar);
+  /* Needs both max and min for the MonacoEditorContainerParentDiv */
   max-height: var(--heightVar);
   min-height: var(--heightVar);
-  // Hides the horizontal scroll bar when using the Monaco Editor
-  // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
-  --heightVar: calc(100vh - 3em);
+  --heightVar: calc(100vh - 2em);
   @media screen and (max-width: 1172px) {
-    --heightVar: calc(100vh - 4.25em);
+    --heightVar: calc(100vh - 3.25em);
   }
   @media screen and (max-width: 1068px) {
-    --heightVar: calc(100vh - 4.5em);
+    --heightVar: calc(100vh - 3.5em);
   }
   /* For three lines of settings */
   @media screen and (max-width: 840px) {
-    --heightVar: calc(100vh - 6.5em);
+    --heightVar: calc(100vh - 5.5em);
   }
   /* Make settings small when hidden */
   &.hideSettings {
-    --heightVar: calc(100vh - 3em);
+    --heightVar: calc(100vh - 2em);
   }
 }
 
 /** Monaco Editor Parent div*/
 .MonacoEditorContainerParentDiv {
   min-width: 150px;
+  // Hides the horizontal scroll bar when using the Monaco Editor
+  // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
   overflow-x: hidden !important;
   overflow-y: hidden;
+  padding-top: 1em;
   width: 100%;
 }
 
@@ -122,7 +123,7 @@ html {
   }
   line-height: 1.7;
   overflow: auto;
-  padding: 0px 1em 1em;
+  padding: 1em;
 
   a {
     color: var(--sn-stylekit-info-color); // #086dd6;
