@@ -81,14 +81,14 @@ html {
   // Hides the horizontal scroll bar when using the Monaco Editor
   // Otherwise the horizontal scroll bar will flash when the Monaco editor suggests words
   --heightVar: calc(100vh - 3em);
-  @media screen and (max-width: 1168px) {
+  @media screen and (max-width: 1172px) {
     --heightVar: calc(100vh - 4.25em);
   }
   @media screen and (max-width: 1068px) {
-    --heightVar: calc(100vh - 5em);
+    --heightVar: calc(100vh - 4.5em);
   }
   /* For three lines of settings */
-  @media screen and (max-width: 878px) {
+  @media screen and (max-width: 840px) {
     --heightVar: calc(100vh - 6.5em);
   }
   /* Make settings small when hidden */
@@ -267,12 +267,10 @@ html {
   margin-top: auto;
   opacity: 0.2;
   overflow-x: auto;
+  padding-bottom: 0.1em;
   padding-left: 1em;
   padding-top: 0.1em;
   transition: opacity 400ms ease-out;
-  @media screen and (max-width: 878px) {
-    padding-bottom: 0.2em;
-  }
   @media screen and (max-width: 720px) {
     padding-left: 0.5em;
   }
@@ -280,7 +278,7 @@ html {
     opacity: 0.5;
   }
   /* If screen is big enough to fit all buttons */
-  @media screen and (min-width: 879px) {
+  @media screen and (min-width: 840px) {
     &.hide {
       opacity: 0;
     }
