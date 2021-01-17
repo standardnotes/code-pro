@@ -7,7 +7,7 @@ import Settings from './Settings';
 
 /** Lib */
 import { makePrettier } from '../lib/makePrettier';
-import { renderMarkdown } from '../lib/renderMarkdown';
+import { getCodeText, renderMarkdown } from '../lib/renderMarkdown';
 import ErrorBoundary from './ErrorBoundary';
 
 export enum HtmlClassName {
@@ -103,14 +103,16 @@ export default class Editor extends React.Component<{}, EditorInterface> {
       setEditorRawText: (text: string) => {
         this.setState(
           {
-            editMode: false,
             text,
           },
           () => {
+            if (this.state.viewMode) {
+              renderMarkdown.cancel();
+              renderMarkdown(getCodeText(this.state.language, text));
+              renderMarkdown.flush();
+              this.refreshView();
+            }
             /** Wait until the text has been loaded to show the editor */
-            this.setState({
-              editMode: true,
-            });
             this.loadDefaultSettings(() => {});
             this.loadSettings();
           }
@@ -130,12 +132,8 @@ export default class Editor extends React.Component<{}, EditorInterface> {
   componentDidMount = () => {
     this.configureEditorKit();
     setTimeout(() => {
-      const note = this.editorKit.internal.note;
-      /** This runs if there's no note */
-      if (note === undefined) {
-        this.setState({ editMode: true });
-      }
-    }, 500);
+      this.setState({ editMode: true });
+    }, 250);
   };
 
   saveSettings = () => {
@@ -282,9 +280,6 @@ export default class Editor extends React.Component<{}, EditorInterface> {
               ' Value: ' +
               event.target.value
           );
-        }
-        if (name === 'language') {
-          this.refreshMarkdown();
         }
         this.saveSettings();
       }
@@ -987,27 +982,23 @@ interface ViewProps {
   text: string;
 }
 
+let lastLanguage: string;
 export const View: React.FC<ViewProps> = ({
   language,
   refreshTokenView, // used to manually refresh the markdown
   text,
 }) => {
-  const updateLanguageText = (languageProps: string, textProps: string) => {
-    if (languageProps !== 'markdown' && languageProps !== 'html') {
-      return '```' + languageProps + '\n' + textProps + '\n```';
-    } else {
-      return textProps;
+  const [markdown, updateMarkdown] = useState(
+    renderMarkdown(getCodeText(language, text))
+  );
+  useEffect(() => {
+    if (lastLanguage !== language) {
+      lastLanguage = language;
+      renderMarkdown.cancel();
+      renderMarkdown(getCodeText(language, text));
+      renderMarkdown.flush();
     }
-  };
-
-  const [newText, updateNewText] = useState(updateLanguageText(language, text));
-  useEffect(() => {
-    updateNewText(updateLanguageText(language, text));
-  }, [language, text]);
-
-  const [markdown, updateMarkdown] = useState(renderMarkdown(newText));
-  useEffect(() => {
-    updateMarkdown(renderMarkdown(newText));
-  }, [newText, refreshTokenView]);
+    updateMarkdown(renderMarkdown(getCodeText(language, text)));
+  }, [language, text, refreshTokenView]);
   return <div id={HtmlElementId.viewContainer}>{markdown}</div>;
 };

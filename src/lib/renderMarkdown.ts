@@ -45,7 +45,15 @@ export const processMarkdown = (text: string) => {
 /** Debounce the rendering of markdown to prevent lag
  * when rendering long notes or lots of Markdown or KaTeX */
 export const renderMarkdown = debounce((text: string): React.ReactNode => {
-  //console.log('renderLongMarkdownText');
+  //console.log('renderMarkdown', text.substring(0, 10));
   const markdown = processMarkdown(text);
   return markdown;
 }, 500);
+
+export const getCodeText = (language: string, text: string): string => {
+  if (language !== 'markdown' && language !== 'html' && text) {
+    return '```' + language + '\n' + text + '\n```';
+  } else {
+    return text;
+  }
+};
