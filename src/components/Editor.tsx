@@ -119,6 +119,7 @@ export default class Editor extends React.Component<{}, EditorInterface> {
               renderMarkdown.flush();
               this.refreshView();
             }
+            this.refreshEditor();
             /** Wait until the text has been loaded to show the editor */
             this.loadDefaultSettings(() => {});
             this.loadSettings();
