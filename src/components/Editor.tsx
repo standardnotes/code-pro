@@ -698,6 +698,43 @@ interface MonacoEditorTypes {
   wordWrap: string;
 }
 
+export const getBaseTheme = (): monaco.editor.BuiltinTheme => {
+  const whiteSpaceRegExp = /\s+/g;
+  let themeType = getComputedStyle(document.documentElement)
+    .getPropertyValue('--sn-stylekit-theme-type')
+    .replace(whiteSpaceRegExp, '');
+  let backgroundColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--sn-stylekit-background-color')
+    .replace(whiteSpaceRegExp, '');
+  if (themeType === 'light') {
+    return 'vs';
+  } else if (themeType === 'dark') {
+    return 'vs-dark';
+  } else if (backgroundColor === 'white' || backgroundColor === '#fff') {
+    /** Default theme */
+    return 'vs';
+  } else if (backgroundColor === '#EDE4DA') {
+    /** Autobiography */
+    return 'vs';
+  } else if (backgroundColor === '#0f1011') {
+    /** Focus */
+    return 'vs-dark';
+  } else if (backgroundColor === '#20202b') {
+    /** Futura and Focus Midnight */
+    return 'vs-dark';
+  } else if (backgroundColor === '#002B36') {
+    /** Solarized Dark */
+    return 'vs-dark';
+  } else if (backgroundColor === '#d9dbde') {
+    /** Titanium */
+    return 'vs';
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'vs-dark';
+  } else {
+    return 'vs-dark';
+  }
+};
+
 export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
   fontSize = '16px',
   id = HtmlElementId.MonacoEditorContainer,
@@ -837,11 +874,9 @@ export const MonacoEditor: React.FC<MonacoEditorTypes> = ({
           warningColor = tempWarningColor;
         }
 
-        let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
-          .matches;
         monaco.editor.defineTheme('sn-theme', {
           /** If sn-theme, then if not dark mode, use vs. Otherwise, use vs-dark (default) */
-          base: !isDarkMode ? 'vs' : 'vs-dark',
+          base: getBaseTheme(),
           inherit: true,
           rules: [
             {
