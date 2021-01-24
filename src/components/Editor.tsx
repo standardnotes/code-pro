@@ -171,12 +171,32 @@ export default class Editor extends React.Component<{}, EditorInterface> {
           note.content.codeEditorSettings
         ) as SettingsInterface;
         this.setState({
-          fontSize: loadedSettings.fontSize,
-          language: loadedSettings.language,
-          minimap: loadedSettings.minimap,
-          tabSize: loadedSettings.tabSize,
-          theme: loadedSettings.theme,
-          wordWrap: loadedSettings.wordWrap,
+          /** If each property is the appropriate type, then assign it.
+           * Otherwise, set state as the current state. */
+          fontSize:
+            typeof loadedSettings.fontSize === 'string'
+              ? loadedSettings.fontSize
+              : this.state.fontSize,
+          language:
+            typeof loadedSettings.language === 'string'
+              ? loadedSettings.language
+              : this.state.language,
+          minimap:
+            typeof loadedSettings.minimap === 'boolean'
+              ? loadedSettings.minimap
+              : this.state.minimap,
+          tabSize:
+            typeof loadedSettings.tabSize === 'number'
+              ? loadedSettings.tabSize
+              : this.state.tabSize,
+          theme:
+            typeof loadedSettings.theme === 'string'
+              ? loadedSettings.theme
+              : this.state.theme,
+          wordWrap:
+            typeof loadedSettings.wordWrap === 'string'
+              ? loadedSettings.wordWrap
+              : this.state.wordWrap,
         });
       }
     });
@@ -225,12 +245,32 @@ export default class Editor extends React.Component<{}, EditorInterface> {
         }
         this.setState(
           {
-            fontSize: defaultSettings.fontSize,
-            language: defaultSettings.language,
-            minimap: defaultSettings.minimap,
-            tabSize: defaultSettings.tabSize,
-            theme: defaultSettings.theme,
-            wordWrap: defaultSettings.wordWrap,
+            /** If each property is the appropriate type, then assign it.
+             * Otherwise, set state as the current state. */
+            fontSize:
+              typeof defaultSettings.fontSize === 'string'
+                ? defaultSettings.fontSize
+                : this.state.fontSize,
+            language:
+              typeof defaultSettings.language === 'string'
+                ? defaultSettings.language
+                : this.state.language,
+            minimap:
+              typeof defaultSettings.minimap === 'boolean'
+                ? defaultSettings.minimap
+                : this.state.minimap,
+            tabSize:
+              typeof defaultSettings.tabSize === 'number'
+                ? defaultSettings.tabSize
+                : this.state.tabSize,
+            theme:
+              typeof defaultSettings.theme === 'string'
+                ? defaultSettings.theme
+                : this.state.theme,
+            wordWrap:
+              typeof defaultSettings.wordWrap === 'string'
+                ? defaultSettings.wordWrap
+                : this.state.wordWrap,
           },
           () => {
             if (callback) {
