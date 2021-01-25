@@ -308,8 +308,7 @@ html {
     margin-right: 0.5em;
   }
   .button {
-    border: 1px solid var(--sn-component-inner-border-color);
-    border-radius: 0;
+    border-width: 0px;
     max-height: 22.6px;
     padding: 0px 0.5em;
   }
