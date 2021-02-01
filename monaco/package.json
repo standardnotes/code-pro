@@ -1,0 +1,12 @@
+{
+  "name": "monaco-editor-workers",
+  "scripts": {
+    "build": "NODE_ENV='production' ./node_modules/.bin/webpack --progress",
+    "copy": "cp ./dist/* ../public/monaco"
+  },
+  "dependencies": {
+    "monaco-editor-webpack-plugin": "^3.0.0",
+    "monaco-editor": "^0.22.3",
+    "webpack-cli": "^4.4.0",
+    "webpack": "^5.19.0"  }
+}
